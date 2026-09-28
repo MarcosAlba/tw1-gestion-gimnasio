@@ -6,9 +6,10 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.tallerwebi.dominio.RepositorioUsuario;
 import com.tallerwebi.dominio.Usuario;
+import com.tallerwebi.dominio.enums.Deporte;
 import com.tallerwebi.dominio.excepcion.UsuarioNoEncontrado;
+import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
 import com.tallerwebi.infraestructura.config.HibernateInfraestructuraTestConfig;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
@@ -118,6 +119,39 @@ public class RepositorioUsuarioTest {
     // Al no tener ID (no estar persistido), buscar por id devuelve null y
     // modificar debe lanzar UsuarioNoEncontrado.
     this.entoncesSeLanzaUnaUsuarioNoEncontrado(usuario);
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaEncontrarUnUsuarioExistenteCuandoBuscoPorId() {
+    // preparacion
+    Usuario usuario = this.dadoQueTengoUnUsuario("socio@test.com", "123", "SOCIO");
+    usuario.setNombre("Juan");
+    usuario.setApellido("Perez");
+    usuario.setDeporte(Deporte.TENIS);
+    this.dadoQueExisteElUsuario(usuario);
+
+    // ejecucion
+    Usuario obtenido = this.cuandoBuscoUnUsuarioPorId(usuario.getId());
+
+    // validacion
+    this.entoncesElUsuarioObtenidoEsCorrecto(obtenido, usuario);
+    assertThat(obtenido.getId(), is(equalTo(usuario.getId())));
+    assertThat(obtenido.getNombre(), is(equalTo("Juan")));
+    assertThat(obtenido.getApellido(), is(equalTo("Perez")));
+    assertThat(obtenido.getDeporte(), is(equalTo(Deporte.TENIS)));
+  }
+
+  private Usuario cuandoBuscoUnUsuarioPorId(Long id) {
+    return repositorioUsuario.buscarPorId(id);
+  }
+
+  @Test
+  @Transactional
+  public void noDeberiaEncontrarUnUsuarioInexistenteCuandoBuscoPorId() {
+    Usuario obtenido = this.cuandoBuscoUnUsuarioPorId(999L);
+    this.entoncesElUsuarioObtenidoEsNull(obtenido);
   }
 
   private Usuario dadoQueTengoUnUsuario(String email, String password, String rol) {

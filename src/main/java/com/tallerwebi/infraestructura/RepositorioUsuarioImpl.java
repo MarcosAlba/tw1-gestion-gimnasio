@@ -1,8 +1,8 @@
 package com.tallerwebi.infraestructura;
 
-import com.tallerwebi.dominio.RepositorioUsuario;
 import com.tallerwebi.dominio.Usuario;
 import com.tallerwebi.dominio.excepcion.UsuarioNoEncontrado;
+import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -52,5 +52,10 @@ public class RepositorioUsuarioImpl implements RepositorioUsuario {
       throw new UsuarioNoEncontrado();
     }
     sessionFactory.getCurrentSession().merge(usuario);
+  }
+
+  @Override
+  public Usuario buscarPorId(Long id) {
+    return sessionFactory.getCurrentSession().get(Usuario.class, id);
   }
 }
