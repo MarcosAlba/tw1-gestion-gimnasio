@@ -1,7 +1,13 @@
 package com.tallerwebi.dominio.enums;
 
 public enum Deporte {
-  TENIS(3, 2, 2, 1);
+  TENIS(3, 2, 2, 1),
+  FUTBOL(3, 3, 2, 2),
+  PADEL(3, 2, 3, 1),
+  BOXEO(2, 3, 3, 3),
+  RUGBY(2, 3, 1, 3),
+  BASQUET(3, 3, 2, 2),
+  HANDBALL(3, 3, 2, 2);
 
   private int agilidad;
   private int cardio;
