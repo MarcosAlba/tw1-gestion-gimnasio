@@ -1,74 +1,57 @@
 <!DOCTYPE HTML>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <title>Taller Web I</title>
-
-    <!-- Boostrap core css -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-
-    <!-- custom style -->
-    <link rel="stylesheet" th:href="@{/css/main.css}" />
-
-</head>
+<head th:replace="~{fragmentos :: cabecera('Mi rutina')}"></head>
 
 <body>
 
-<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand" href="#">UNLAM</a>
-</nav>
+  <nav th:replace="~{fragmentos :: barra('rutina')}"></nav>
 
-<main role="main" class="container">
+  <main role="main" class="pagina">
+    <header class="pagina-cabecera">
+      <div>
+        <h1>Mi rutina</h1>
+        <p>Los ejercicios se eligen según tu deporte. Cada vez que generás una rutina nueva, la anterior queda en el historial.</p>
+      </div>
+      <form th:action="@{/rutina/generar}" method="POST">
+        <button class="btn btn-primary" type="submit">Generar nueva rutina</button>
+      </form>
+    </header>
 
-    <div class="container" style="margin-top:50px;">
-        <h3>Mi rutina</h3>
-        <hr class="colorgraph">
+    <p th:if="${error != null}" class="alert alert-danger" th:text="${error}"></p>
 
-        <form th:action="@{/rutina/generar}" method="POST">
-            <button class="btn btn-primary mb-3" type="submit">Generar nueva rutina</button>
-        </form>
+    <div th:if="${rutina != null}">
+      <p class="meta">
+        <span>Deporte: <strong th:text="${#strings.capitalize(#strings.toLowerCase(rutina.deporte))}">Tenis</strong></span>
+        <span>Generada el <strong th:text="${#temporals.format(rutina.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</strong></span>
+      </p>
 
-        <p th:if="${error != null}" class="alert alert-danger" th:text="${error}"></p>
-
-        <div th:if="${rutina != null}">
-            <p class="text-muted">
-                Deporte: <span th:text="${rutina.deporte}"></span> ·
-                Generada: <span th:text="${#temporals.format(rutina.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span>
-            </p>
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>Ejercicio</th>
-                    <th>Capacidad</th>
-                    <th>Dificultad</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="e : ${rutina.ejercicios}">
-                    <td th:text="${e.nombre}"></td>
-                    <td th:text="${e.capacidad}"></td>
-                    <td th:text="${e.dificultad}"></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <p th:if="${rutina == null and error == null}" class="text-muted">
-            Todavía no generaste ninguna rutina.
-        </p>
+      <div class="tabla-responsive">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Ejercicio</th>
+              <th>Capacidad</th>
+              <th>Dificultad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="e : ${rutina.ejercicios}">
+              <td class="principal" th:text="${e.nombre}">Sentadilla</td>
+              <td><th:block th:replace="~{fragmentos :: capacidad(${e.capacidad})}"></th:block></td>
+              <td><th:block th:replace="~{fragmentos :: dificultad(${e.dificultad})}"></th:block></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-</main>
-<!-- /.container -->
+    <p th:if="${rutina == null and error == null}" class="vacio">
+      Todavía no generaste ninguna rutina. Usá el botón de arriba para armar la primera.
+    </p>
+  </main>
 
-<!-- Boostrap core js -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-        crossorigin="anonymous"></script>
+  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
 
 </body>
 
