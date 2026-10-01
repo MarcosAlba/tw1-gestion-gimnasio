@@ -29,6 +29,7 @@
       <a th:if="${session.ROL == 'SOCIO'}" th:href="@{/rutina}" class="btn btn-lg btn-primary btn-block">Mi rutina</a>
       <a th:if="${session.ROL == 'SOCIO'}" th:href="@{/membresias}" class="btn btn-lg btn-primary btn-block">Mi membresía</a>
       <a th:if="${session.ROL == 'ENTRENADOR' or session.ROL == 'SOCIO'}" th:href="@{/clases}" class="btn btn-lg btn-primary btn-block">Clases</a>
+      <a th:if="${session.ROL == 'SOCIO'}" th:href="@{/reservas}" class="btn btn-lg btn-primary btn-block">Mis reservas</a>
       <a href="login.html" class="btn btn-lg btn-primary btn-block">Volver</a>
     </div>
   </main>
