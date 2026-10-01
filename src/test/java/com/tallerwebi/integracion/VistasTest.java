@@ -80,6 +80,9 @@ public class VistasTest {
     String html = pagina(get("/nuevo-usuario"));
 
     assertThat(html, containsString("id=\"btn-registrarme\""));
+    assertThat(html, containsString("id=\"rol\""));
+    assertThat(html, containsString("Entrenador"));
+    assertThat(html, containsString("Fútbol"));
   }
 
   @Test
