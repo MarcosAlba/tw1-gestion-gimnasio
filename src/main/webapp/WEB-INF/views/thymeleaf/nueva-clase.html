@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Taller Web I</title>
+
+  <!-- Boostrap core css -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+  <!-- custom style -->
+  <link rel="stylesheet" th:href="@{/css/main.css}" />
+
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">UNLAM</a>
+  </nav>
+
+  <main role="main" class="container">
+
+    <div class="container">
+      <div id="loginbox" style="margin-top:50px;" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
+        <form action="#" th:action="@{/clases/guardar}" method="POST" th:object="${datosClase}">
+          <h3 class="form-signin-heading">Nueva Clase</h3>
+          <hr class="colorgraph"><br>
+
+          <input th:field="*{nombre}" type="text" id="nombre" class="form-control mb-2" placeholder="Nombre (ej: Spinning)" required />
+          <input th:field="*{inicio}" type="datetime-local" id="inicio" class="form-control mb-2" required />
+          <input th:field="*{duracion}" type="number" min="1" id="duracion" class="form-control mb-2" placeholder="Duración (minutos)" required />
+          <input th:field="*{lugar}" type="text" id="lugar" class="form-control mb-2" placeholder="Lugar (ej: Sala 1)" required />
+          <input th:field="*{cupo}" type="number" min="1" id="cupo" class="form-control mb-2" placeholder="Cupo máximo" required />
+          <select th:field="*{capacidad}" id="capacidad" class="form-control mb-2" required>
+            <option value="" disabled selected>Capacidad física</option>
+            <option th:each="c : ${T(com.tallerwebi.dominio.enums.CapacidadFisica).values()}"
+                    th:value="${c}" th:text="${c}"></option>
+          </select>
+
+          <button id="btn-guardar" class="btn btn-lg btn-primary btn-block" Type="Submit">Guardar</button>
+          <p th:if="${error != null}" class="alert alert-danger" th:text="'Error ' + ${error}">
+          </p>
+        </form>
+
+      </div>
+    </div>
+
+  </main>
+  <!-- /.container -->
+
+  <!-- Boostrap core js -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+    crossorigin="anonymous"></script>
+
+</body>
+
+</html>
