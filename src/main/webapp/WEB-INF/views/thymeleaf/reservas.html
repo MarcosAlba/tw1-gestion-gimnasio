@@ -25,45 +25,41 @@
   <main role="main" class="container">
 
     <div class="container" style="margin-top:50px;">
-      <h3>Próximas clases</h3>
+      <h3>Mis reservas</h3>
       <hr class="colorgraph">
 
-      <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}" class="btn btn-primary mb-3">Nueva clase</a>
+      <p th:if="${error != null}" class="alert alert-danger" th:text="${error}"></p>
+
+      <a th:href="@{/clases}" class="btn btn-primary mb-3">Ver clases para reservar</a>
 
       <table class="table table-striped">
         <thead>
           <tr>
             <th>Clase</th>
             <th>Inicio</th>
-            <th>Duración</th>
             <th>Lugar</th>
-            <th>Cupo</th>
-            <th>Capacidad</th>
-            <th>Entrenador</th>
-            <th th:if="${session.ROL == 'SOCIO'}"></th>
+            <th>Estado</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
-          <tr th:each="c : ${clases}">
-            <td th:text="${c.nombre}"></td>
-            <td th:text="${#temporals.format(c.inicio, 'dd/MM/yyyy HH:mm')}"></td>
-            <td th:text="${c.duracion} + ' min'"></td>
-            <td th:text="${c.lugar}"></td>
-            <td th:text="${c.cupo}"></td>
-            <td th:text="${c.capacidad}"></td>
-            <td th:text="${c.entrenador.nombre != null ? c.entrenador.nombre + ' ' + c.entrenador.apellido : c.entrenador.email}"></td>
-            <td th:if="${session.ROL == 'SOCIO'}">
-              <form th:action="@{/reservas/reservar}" method="POST">
-                <input type="hidden" name="claseId" th:value="${c.id}" />
-                <button class="btn btn-sm btn-primary" type="submit">Reservar</button>
+          <tr th:each="r : ${reservas}">
+            <td th:text="${r.clase.nombre}"></td>
+            <td th:text="${#temporals.format(r.clase.inicio, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${r.clase.lugar}"></td>
+            <td th:text="${r.estado}"></td>
+            <td>
+              <form th:if="${r.estado.name() == 'CONFIRMADA'}" th:action="@{/reservas/cancelar}" method="POST">
+                <input type="hidden" name="reservaId" th:value="${r.id}" />
+                <button class="btn btn-sm btn-outline-danger" type="submit">Cancelar</button>
               </form>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <p th:if="${#lists.isEmpty(clases)}" class="text-muted">
-        No hay clases programadas.
+      <p th:if="${#lists.isEmpty(reservas)}" class="text-muted">
+        Todavía no tenés reservas.
       </p>
     </div>
 
