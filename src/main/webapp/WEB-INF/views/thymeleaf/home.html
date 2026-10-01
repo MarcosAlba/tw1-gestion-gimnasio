@@ -1,44 +1,57 @@
 <!DOCTYPE HTML>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-  <title>Taller Web I</title>
-
-  <!-- Boostrap core css -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-
-  <!-- custom style -->
-  <link rel="stylesheet" th:href="@{/css/main.css}" />
-
-</head>
+<head th:replace="~{fragmentos :: cabecera('Inicio')}"></head>
 
 <body>
 
-  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand" href="#">UNLAM</a>
-  </nav>
+  <nav th:replace="~{fragmentos :: barra('home')}"></nav>
 
-  <main role="main" class="container">
-    <div class="container">
-      <h1>Bienvenidos a Taller Web 1</h1>
-      <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/ejercicios}" class="btn btn-lg btn-primary btn-block">Ejercicios</a>
-      <a th:if="${session.ROL == 'SOCIO'}" th:href="@{/rutina}" class="btn btn-lg btn-primary btn-block">Mi rutina</a>
-      <a th:if="${session.ROL == 'SOCIO'}" th:href="@{/membresias}" class="btn btn-lg btn-primary btn-block">Mi membresía</a>
-      <a th:if="${session.ROL == 'ENTRENADOR' or session.ROL == 'SOCIO'}" th:href="@{/clases}" class="btn btn-lg btn-primary btn-block">Clases</a>
-      <a th:if="${session.ROL == 'SOCIO'}" th:href="@{/reservas}" class="btn btn-lg btn-primary btn-block">Mis reservas</a>
-      <a href="login.html" class="btn btn-lg btn-primary btn-block">Volver</a>
-    </div>
+  <main role="main" class="pagina">
+    <header class="pagina-cabecera">
+      <div>
+        <h1 th:text="${session.ROL == 'SOCIO'} ? 'Tu entrenamiento' : (${session.ROL == 'ENTRENADOR'} ? 'Tus clases' : 'Gimnasio')">Tu entrenamiento</h1>
+        <p th:if="${session.ROL == 'SOCIO'}">Reservá clases, revisá tu membresía y seguí tu rutina.</p>
+        <p th:if="${session.ROL == 'ENTRENADOR'}">Publicá clases y cargá los ejercicios que usan las rutinas.</p>
+        <p th:if="${session.ROL != 'SOCIO' and session.ROL != 'ENTRENADOR'}">Esta cuenta todavía no tiene accesos asignados.</p>
+      </div>
+    </header>
+
+    <ul class="accesos">
+      <li th:if="${session.ROL == 'ENTRENADOR' or session.ROL == 'SOCIO'}">
+        <a class="acceso" th:href="@{/clases}">
+          <span class="acceso-titulo">Clases</span>
+          <span class="acceso-texto" th:text="${session.ROL == 'SOCIO'} ? 'Mirá los horarios y reservá tu lugar.' : 'Mirá las próximas clases y creá una nueva.'">Mirá los horarios.</span>
+        </a>
+      </li>
+      <li th:if="${session.ROL == 'SOCIO'}">
+        <a class="acceso" th:href="@{/reservas}">
+          <span class="acceso-titulo">Mis reservas</span>
+          <span class="acceso-texto">Consultá y cancelá tus reservas.</span>
+        </a>
+      </li>
+      <li th:if="${session.ROL == 'SOCIO'}">
+        <a class="acceso" th:href="@{/membresias}">
+          <span class="acceso-titulo">Mi membresía</span>
+          <span class="acceso-texto">Revisá el vencimiento o contratá un plan.</span>
+        </a>
+      </li>
+      <li th:if="${session.ROL == 'SOCIO'}">
+        <a class="acceso" th:href="@{/rutina}">
+          <span class="acceso-titulo">Mi rutina</span>
+          <span class="acceso-texto">Generá una rutina según tu deporte.</span>
+        </a>
+      </li>
+      <li th:if="${session.ROL == 'ENTRENADOR'}">
+        <a class="acceso" th:href="@{/ejercicios}">
+          <span class="acceso-titulo">Ejercicios</span>
+          <span class="acceso-texto">Cargá ejercicios por capacidad física.</span>
+        </a>
+      </li>
+    </ul>
   </main>
-  <!-- /.container -->
 
-  <!-- Boostrap core js -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-    crossorigin="anonymous"></script>
+  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
 
 </body>
 

@@ -1,58 +1,47 @@
 <!DOCTYPE HTML>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-  <title>Taller Web I</title>
-
-  <!-- Boostrap core css -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-
-  <!-- custom style -->
-  <link rel="stylesheet" th:href="@{/css/main.css}" />
-
-</head>
+<head th:replace="~{fragmentos :: cabecera('Clases')}"></head>
 
 <body>
 
-  <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-    <a class="navbar-brand" href="#">UNLAM</a>
-  </nav>
+  <nav th:replace="~{fragmentos :: barra('clases')}"></nav>
 
-  <main role="main" class="container">
+  <main role="main" class="pagina">
+    <header class="pagina-cabecera">
+      <div>
+        <h1>Próximas clases</h1>
+        <p th:if="${session.ROL == 'SOCIO'}">Elegí una clase y reservá tu lugar. Necesitás una membresía vigente.</p>
+        <p th:if="${session.ROL != 'SOCIO'}">Clases programadas, ordenadas por horario de inicio.</p>
+      </div>
+      <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}" class="btn btn-primary">Nueva clase</a>
+    </header>
 
-    <div class="container" style="margin-top:50px;">
-      <h3>Próximas clases</h3>
-      <hr class="colorgraph">
-
-      <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}" class="btn btn-primary mb-3">Nueva clase</a>
-
-      <table class="table table-striped">
+    <div class="tabla-responsive" th:unless="${#lists.isEmpty(clases)}">
+      <table class="tabla">
         <thead>
           <tr>
             <th>Clase</th>
             <th>Inicio</th>
-            <th>Duración</th>
-            <th>Lugar</th>
-            <th>Cupo</th>
+            <th class="d-none d-md-table-cell">Duración</th>
+            <th class="d-none d-md-table-cell">Lugar</th>
             <th>Capacidad</th>
-            <th>Entrenador</th>
+            <th class="numero d-none d-md-table-cell">Cupo</th>
             <th th:if="${session.ROL == 'SOCIO'}"></th>
           </tr>
         </thead>
         <tbody>
           <tr th:each="c : ${clases}">
-            <td th:text="${c.nombre}"></td>
-            <td th:text="${#temporals.format(c.inicio, 'dd/MM/yyyy HH:mm')}"></td>
-            <td th:text="${c.duracion} + ' min'"></td>
-            <td th:text="${c.lugar}"></td>
-            <td th:text="${c.cupo}"></td>
-            <td th:text="${c.capacidad}"></td>
-            <td th:text="${c.entrenador.nombre != null ? c.entrenador.nombre + ' ' + c.entrenador.apellido : c.entrenador.email}"></td>
-            <td th:if="${session.ROL == 'SOCIO'}">
+            <td>
+              <span class="principal" th:text="${c.nombre}">Spinning</span>
+              <span class="secundario" th:text="${c.entrenador.nombre != null ? c.entrenador.nombre + ' ' + c.entrenador.apellido : c.entrenador.email}">Entrenador</span>
+            </td>
+            <td th:text="${#temporals.format(c.inicio, 'dd/MM/yyyy HH:mm')}">01/01/2026 18:00</td>
+            <td class="d-none d-md-table-cell" th:text="${c.duracion} + ' min'">45 min</td>
+            <td class="d-none d-md-table-cell" th:text="${c.lugar}">Sala 1</td>
+            <td><th:block th:replace="~{fragmentos :: capacidad(${c.capacidad})}"></th:block></td>
+            <td class="numero d-none d-md-table-cell" th:text="${c.cupo}">10</td>
+            <td class="accion" th:if="${session.ROL == 'SOCIO'}">
               <form th:action="@{/reservas/reservar}" method="POST">
                 <input type="hidden" name="claseId" th:value="${c.id}" />
                 <button class="btn btn-sm btn-primary" type="submit">Reservar</button>
@@ -61,19 +50,15 @@
           </tr>
         </tbody>
       </table>
-
-      <p th:if="${#lists.isEmpty(clases)}" class="text-muted">
-        No hay clases programadas.
-      </p>
     </div>
 
+    <p th:if="${#lists.isEmpty(clases)}" class="vacio">
+      No hay clases programadas.
+      <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}">Creá la primera.</a>
+    </p>
   </main>
-  <!-- /.container -->
 
-  <!-- Boostrap core js -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-    crossorigin="anonymous"></script>
+  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
 
 </body>
 

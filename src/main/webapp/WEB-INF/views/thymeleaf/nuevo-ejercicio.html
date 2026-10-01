@@ -1,64 +1,49 @@
 <!DOCTYPE HTML>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-  <title>Taller Web I</title>
-
-  <!-- Boostrap core css -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-
-  <!-- custom style -->
-  <link rel="stylesheet" th:href="@{/css/main.css}" />
-
-</head>
+<head th:replace="~{fragmentos :: cabecera('Nuevo ejercicio')}"></head>
 
 <body>
 
-<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-  <a class="navbar-brand" href="#">UNLAM</a>
-</nav>
+  <nav th:replace="~{fragmentos :: barra('ejercicios')}"></nav>
 
-<main role="main" class="container">
+  <main role="main" class="pagina">
+    <header class="pagina-cabecera">
+      <div>
+        <h1>Nuevo ejercicio</h1>
+        <p>El nombre es obligatorio y no puede repetirse.</p>
+      </div>
+    </header>
 
-  <div class="container">
-    <div id="loginbox" style="margin-top:50px;" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
-      <form action="#" th:action="@{/ejercicios/guardar}" method="POST" th:object="${datosEjercicio}">
-        <h3 class="form-signin-heading">Nuevo Ejercicio</h3>
-        <hr class="colorgraph"><br>
+    <form class="formulario" action="#" th:action="@{/ejercicios/guardar}" method="POST" th:object="${datosEjercicio}">
+      <label class="campo-etiqueta" for="nombre">Nombre</label>
+      <input th:field="*{nombre}" type="text" id="nombre" class="form-control" placeholder="Sentadilla con barra" required />
 
-        <input th:field="*{nombre}" type="text" id="nombre" class="form-control" placeholder="Nombre" required />
-        <input th:field="*{descripcion}" type="text" id="descripcion" class="form-control" placeholder="Descripción (opcional)" />
-        <select th:field="*{capacidad}" id="capacidad" class="form-control" required>
-          <option value="" disabled selected>Capacidad física</option>
-          <option th:each="c : ${T(com.tallerwebi.dominio.enums.CapacidadFisica).values()}"
-                  th:value="${c}" th:text="${c}"></option>
-        </select>
+      <label class="campo-etiqueta" for="descripcion">Descripción (opcional)</label>
+      <input th:field="*{descripcion}" type="text" id="descripcion" class="form-control" placeholder="Cómo se hace" />
 
-        <select th:field="*{dificultad}" id="dificultad" class="form-control" required>
-          <option value="" disabled selected>Dificultad</option>
-          <option th:each="d : ${T(com.tallerwebi.dominio.enums.NivelDificultad).values()}"
-                  th:value="${d}" th:text="${d}"></option>
-        </select>
+      <label class="campo-etiqueta" for="capacidad">Capacidad que trabaja</label>
+      <select th:field="*{capacidad}" id="capacidad" class="form-select" required>
+        <option value="" disabled selected>Elegí una capacidad</option>
+        <option th:each="c : ${T(com.tallerwebi.dominio.enums.CapacidadFisica).values()}" th:value="${c}"
+          th:text="${c.name() == 'COORDINACION'} ? 'Coordinación' : ${#strings.capitalize(#strings.toLowerCase(c))}"></option>
+      </select>
 
-        <button id="btn-guardar" class="btn btn-lg btn-primary btn-block" Type="Submit">Guardar</button>
-        <p th:if="${error != null}" class="alert alert-danger" th:text="'Error ' + ${error}">
-        </p>
-      </form>
+      <label class="campo-etiqueta" for="dificultad">Dificultad</label>
+      <select th:field="*{dificultad}" id="dificultad" class="form-select" required>
+        <option value="" disabled selected>Elegí una dificultad</option>
+        <option th:each="d : ${T(com.tallerwebi.dominio.enums.NivelDificultad).values()}" th:value="${d}"
+          th:text="${#strings.capitalize(#strings.toLowerCase(d))}"></option>
+      </select>
 
-    </div>
-  </div>
+      <button id="btn-guardar" class="btn btn-lg btn-primary" Type="Submit">Guardar ejercicio</button>
+      <a class="btn btn-lg" th:href="@{/ejercicios}">Cancelar</a>
 
-</main>
-<!-- /.container -->
+      <p th:if="${error != null}" class="alert alert-danger mt-3" th:text="${error}"></p>
+    </form>
+  </main>
 
-<!-- Boostrap core js -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-        crossorigin="anonymous"></script>
+  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
 
 </body>
 
