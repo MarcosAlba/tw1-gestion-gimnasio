@@ -16,18 +16,39 @@
         <i class="disco disco-coordinacion"></i>
       </div>
       <h1>Sumate al gimnasio</h1>
-      <p>Creá tu cuenta para reservar clases y tener tu rutina.</p>
+      <p>Creá tu cuenta para reservar clases y tener tu rutina, o para armar tus clases como entrenador.</p>
     </section>
 
     <section id="loginbox" class="ingreso-formulario">
       <h2 class="form-signin-heading">Crear cuenta</h2>
       <form class="formulario" action="#" th:action="@{/registrarme}" method="POST" th:object="${usuario}">
+        <label class="campo-etiqueta" for="nombre">Nombre</label>
+        <input th:field="*{nombre}" id="nombre" class="form-control" autocomplete="given-name" />
+
+        <label class="campo-etiqueta" for="apellido">Apellido</label>
+        <input th:field="*{apellido}" id="apellido" class="form-control" autocomplete="family-name" />
+
         <label class="campo-etiqueta" for="email">Email</label>
         <input th:field="*{email}" id="email" class="form-control" autocomplete="email" required />
 
         <label class="campo-etiqueta" for="password">Contraseña</label>
         <input th:field="*{password}" type="password" id="password" class="form-control"
           autocomplete="new-password" required />
+
+        <label class="campo-etiqueta" for="rol">Quiero registrarme como</label>
+        <select th:field="*{rol}" id="rol" class="form-select" required>
+          <option value="SOCIO">Socio</option>
+          <option value="ENTRENADOR">Entrenador</option>
+        </select>
+
+        <div id="campo-deporte">
+          <label class="campo-etiqueta" for="deporte">Deporte que practicás (opcional)</label>
+          <select th:field="*{deporte}" id="deporte" class="form-select">
+            <option value="">Ninguno por ahora</option>
+            <option th:each="d : ${T(com.tallerwebi.dominio.enums.Deporte).values()}" th:value="${d}"
+              th:text="${d.name() == 'FUTBOL'} ? 'Fútbol' : (${d.name() == 'PADEL'} ? 'Pádel' : (${d.name() == 'BASQUET'} ? 'Básquet' : ${#strings.capitalize(#strings.toLowerCase(d))}))"></option>
+          </select>
+        </div>
 
         <button id="btn-registrarme" class="btn btn-lg btn-primary btn-block" Type="Submit">Crear cuenta</button>
 
@@ -39,6 +60,22 @@
   </main>
 
   <th:block th:replace="~{fragmentos :: scripts}"></th:block>
+
+  <script>
+    // El deporte solo aplica a los socios: para un entrenador se oculta y no se envía
+    (function () {
+      var rol = document.getElementById("rol");
+      var campo = document.getElementById("campo-deporte");
+      var deporte = document.getElementById("deporte");
+      function actualizar() {
+        var esSocio = rol.value === "SOCIO";
+        campo.style.display = esSocio ? "" : "none";
+        deporte.disabled = !esSocio;
+      }
+      rol.addEventListener("change", actualizar);
+      actualizar();
+    })();
+  </script>
 
 </body>
 

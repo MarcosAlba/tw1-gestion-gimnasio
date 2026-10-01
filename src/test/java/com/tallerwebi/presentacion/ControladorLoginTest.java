@@ -2,10 +2,12 @@ package com.tallerwebi.presentacion;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.mockito.Mockito.*;
 
 import com.tallerwebi.dominio.Usuario;
+import com.tallerwebi.dominio.excepcion.RolInvalido;
 import com.tallerwebi.dominio.excepcion.UsuarioExistente;
 import com.tallerwebi.dominio.interfaces.ServicioLogin;
 import jakarta.servlet.http.HttpServletRequest;
@@ -72,8 +74,7 @@ public class ControladorLoginTest {
   }
 
   @Test
-  public void registrameSiUsuarioNoExisteDeberiaCrearUsuarioYVolverAlLogin()
-    throws UsuarioExistente {
+  public void registrameSiUsuarioNoExisteDeberiaCrearUsuarioYVolverAlLogin() throws Exception {
     // ejecucion
     ModelAndView modelAndView = controladorLogin.registrarme(usuarioMock);
 
@@ -83,8 +84,7 @@ public class ControladorLoginTest {
   }
 
   @Test
-  public void registrarmeSiUsuarioExisteDeberiaVolverAFormularioYMostrarError()
-    throws UsuarioExistente {
+  public void registrarmeSiUsuarioExisteDeberiaVolverAFormularioYMostrarError() throws Exception {
     // preparacion
     doThrow(UsuarioExistente.class).when(servicioLoginMock).registrar(usuarioMock);
 
@@ -100,7 +100,35 @@ public class ControladorLoginTest {
   }
 
   @Test
-  public void errorEnRegistrarmeDeberiaVolverAFormularioYMostrarError() throws UsuarioExistente {
+  public void registrarmeConRolInvalidoDeberiaVolverAFormularioYMostrarError() throws Exception {
+    // preparacion
+    doThrow(RolInvalido.class).when(servicioLoginMock).registrar(usuarioMock);
+
+    // ejecucion
+    ModelAndView modelAndView = controladorLogin.registrarme(usuarioMock);
+
+    // validacion
+    assertThat(modelAndView.getViewName(), equalToIgnoringCase("nuevo-usuario"));
+    assertThat(
+      modelAndView.getModel().get("error").toString(),
+      equalToIgnoringCase("El rol elegido no es válido")
+    );
+  }
+
+  @Test
+  public void registrarmeConErrorDeberiaConservarLosDatosYaEscritos() throws Exception {
+    // preparacion
+    doThrow(UsuarioExistente.class).when(servicioLoginMock).registrar(usuarioMock);
+
+    // ejecucion
+    ModelAndView modelAndView = controladorLogin.registrarme(usuarioMock);
+
+    // validacion
+    assertThat(modelAndView.getModel().get("usuario"), sameInstance(usuarioMock));
+  }
+
+  @Test
+  public void errorEnRegistrarmeDeberiaVolverAFormularioYMostrarError() throws Exception {
     // preparacion
     doThrow(RuntimeException.class).when(servicioLoginMock).registrar(usuarioMock);
 
@@ -133,6 +161,16 @@ public class ControladorLoginTest {
     // validacion
     assertThat(modelAndView.getViewName(), equalToIgnoringCase("nuevo-usuario"));
     assertThat(modelAndView.getModel().get("usuario"), instanceOf(Usuario.class));
+  }
+
+  @Test
+  public void nuevoUsuarioDeberiaProponerElRolSocioPorDefecto() {
+    // ejecucion
+    ModelAndView modelAndView = controladorLogin.nuevoUsuario();
+
+    // validacion
+    Usuario usuario = (Usuario) modelAndView.getModel().get("usuario");
+    assertThat(usuario.getRol(), equalToIgnoringCase("SOCIO"));
   }
 
   @Test

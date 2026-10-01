@@ -1,5 +1,6 @@
 package com.tallerwebi.dominio;
 
+import com.tallerwebi.dominio.excepcion.RolInvalido;
 import com.tallerwebi.dominio.excepcion.UsuarioExistente;
 import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
 import com.tallerwebi.dominio.interfaces.ServicioLogin;
@@ -10,6 +11,9 @@ import org.springframework.stereotype.Service;
 @Service("servicioLogin")
 @Transactional
 public class ServicioLoginImpl implements ServicioLogin {
+
+  private static final String ROL_SOCIO = "SOCIO";
+  private static final String ROL_ENTRENADOR = "ENTRENADOR";
 
   private RepositorioUsuario repositorioUsuario;
 
@@ -24,14 +28,20 @@ public class ServicioLoginImpl implements ServicioLogin {
   }
 
   @Override
-  public void registrar(Usuario usuario) throws UsuarioExistente {
-    Usuario usuarioEncontrado = repositorioUsuario.buscarUsuario(
-      usuario.getEmail(),
-      usuario.getPassword()
-    );
-    if (usuarioEncontrado != null) {
+  public void registrar(Usuario usuario) throws UsuarioExistente, RolInvalido {
+    if (!esRolPermitido(usuario.getRol())) {
+      throw new RolInvalido();
+    }
+    if (repositorioUsuario.buscar(usuario.getEmail()) != null) {
       throw new UsuarioExistente();
     }
+    if (ROL_ENTRENADOR.equals(usuario.getRol())) {
+      usuario.setDeporte(null);
+    }
     repositorioUsuario.guardar(usuario);
+  }
+
+  private boolean esRolPermitido(String rol) {
+    return ROL_SOCIO.equals(rol) || ROL_ENTRENADOR.equals(rol);
   }
 }
