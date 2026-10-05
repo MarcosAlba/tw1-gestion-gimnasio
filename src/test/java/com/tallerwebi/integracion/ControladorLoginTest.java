@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.tallerwebi.dominio.Usuario;
 import com.tallerwebi.integracion.config.HibernateTestConfig;
 import com.tallerwebi.integracion.config.SpringWebTestConfig;
-import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,19 +44,12 @@ public class ControladorLoginTest {
   }
 
   @Test
-  public void debeRetornarLaPaginaLoginCuandoSeNavegaALaRaiz() throws Exception {
-    MvcResult result =
-      this.mockMvc.perform(get("/"))
-        /*.andDo(print())*/
-        .andExpect(status().is3xxRedirection())
-        .andReturn();
+  public void debeRetornarLaPaginaDeBienvenidaCuandoSeNavegaALaRaiz() throws Exception {
+    MvcResult result = this.mockMvc.perform(get("/")).andExpect(status().isOk()).andReturn();
 
     ModelAndView modelAndView = result.getModelAndView();
     assert modelAndView != null;
-    assertThat(
-      "redirect:/login",
-      equalToIgnoringCase(Objects.requireNonNull(modelAndView.getViewName()))
-    );
+    assertThat(modelAndView.getViewName(), equalToIgnoringCase("bienvenida"));
     assertThat(true, is(modelAndView.getModel().isEmpty()));
   }
 

@@ -33,7 +33,7 @@
     El texto de la marca tiene que seguir siendo "UNLAM": lo usa el test de punta a punta.
   -->
   <nav th:fragment="barra(activo)" class="barra" aria-label="Principal">
-    <a class="navbar-brand" th:href="${session.ROL != null} ? @{/home} : @{/login}">UNLAM</a>
+    <a class="navbar-brand" th:href="${session.ROL != null} ? @{/home} : @{/}">UNLAM</a>
     <span class="barra-sub">Gimnasio</span>
 
     <ul class="barra-enlaces" th:if="${session.ROL != null}">
