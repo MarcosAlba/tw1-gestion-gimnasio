@@ -1,0 +1,74 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragmentos :: cabecera('Bienvenida')}"></head>
+
+<body>
+
+  <nav th:replace="~{fragmentos :: barra('bienvenida')}"></nav>
+
+  <main role="main" class="bienvenida">
+
+    <!-- Portada -->
+    <section class="portada">
+      <div class="portada-texto">
+        <p class="portada-etiqueta">Gimnasio UNLAM</p>
+        <h1>Entrená.<br>Reservá.<br><span>Superate.</span></h1>
+        <p class="portada-bajada">Clases, membresía y rutinas armadas para vos, en un solo lugar.</p>
+        <div class="portada-acciones">
+          <a id="btn-ingresar" class="btn btn-lg btn-portada" th:href="@{/login}">Ingresar</a>
+          <a id="btn-crear-cuenta" class="portada-enlace" th:href="@{/nuevo-usuario}">Crear una cuenta</a>
+        </div>
+      </div>
+
+      <div class="portada-discos" aria-hidden="true">
+        <i class="disco-grande disco-fuerza"></i>
+        <i class="disco-grande disco-agilidad"></i>
+        <i class="disco-grande disco-cardio"></i>
+        <i class="disco-grande disco-coordinacion"></i>
+      </div>
+    </section>
+
+    <!-- Cinta de capacidades -->
+    <div class="cinta" aria-hidden="true">
+      <span>Fuerza</span><i class="disco disco-fuerza"></i>
+      <span>Agilidad</span><i class="disco disco-agilidad"></i>
+      <span>Cardio</span><i class="disco disco-cardio"></i>
+      <span>Coordinación</span><i class="disco disco-coordinacion"></i>
+    </div>
+
+    <!-- Qué se puede hacer -->
+    <section class="beneficios">
+      <h2>Todo lo que necesitás para entrenar</h2>
+      <ul class="beneficios-lista">
+        <li class="beneficio beneficio-fuerza">
+          <span class="beneficio-numero">01</span>
+          <h3>Reservá tus clases</h3>
+          <p>Mirá los horarios, elegí tu clase y asegurá tu lugar.</p>
+        </li>
+        <li class="beneficio beneficio-agilidad">
+          <span class="beneficio-numero">02</span>
+          <h3>Elegí tu membresía</h3>
+          <p>Contratá un plan y controlá cuándo vence.</p>
+        </li>
+        <li class="beneficio beneficio-cardio">
+          <span class="beneficio-numero">03</span>
+          <h3>Seguí tu rutina</h3>
+          <p>Ejercicios pensados para tu objetivo y tu deporte.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Cierre -->
+    <section class="cierre">
+      <h2>¿Listo para empezar?</h2>
+      <a class="btn btn-lg btn-portada" th:href="@{/nuevo-usuario}">Crear mi cuenta</a>
+    </section>
+
+  </main>
+
+  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
+
+</body>
+
+</html>

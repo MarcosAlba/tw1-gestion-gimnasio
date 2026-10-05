@@ -591,6 +591,295 @@ a:hover {
   font-weight: 600;
 }
 
+/* --- Bienvenida ---------------------------------------------------------- */
+
+/* Portada: acero con agarre moleteado y discos grandes que flotan */
+.portada {
+  position: relative;
+  overflow: hidden;
+  min-height: calc(100vh - var(--altura-barra) - 3.5rem);
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: center;
+  gap: 2rem;
+  padding: clamp(2rem, 6vw, 5rem);
+  color: #fff;
+  background-color: var(--acero);
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 6px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 6px);
+}
+
+.portada-etiqueta {
+  display: inline-block;
+  margin: 0 0 1.25rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tinta);
+  background: var(--disco-cardio);
+}
+
+.portada h1 {
+  margin: 0 0 1.5rem;
+  color: #fff;
+  font-size: clamp(3.6rem, 11vw, 8.5rem);
+  line-height: 0.88;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.portada h1 span {
+  color: var(--disco-fuerza);
+}
+
+.portada-bajada {
+  max-width: 28rem;
+  margin: 0 0 2.25rem;
+  font-size: 1.15rem;
+  color: #d3d7db;
+}
+
+.portada-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2rem;
+}
+
+.btn-portada {
+  padding: 0.9rem 2.4rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--disco-fuerza);
+  border: 2px solid var(--disco-fuerza);
+  border-radius: 0;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-portada:hover,
+.btn-portada:focus {
+  color: #fff;
+  background: #e0362a;
+  border-color: #e0362a;
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0 rgba(0, 0, 0, 0.45);
+}
+
+.btn-portada:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+.portada-enlace {
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 2px solid var(--disco-cardio);
+  transition: color 0.15s ease;
+}
+
+.portada-enlace:hover {
+  color: var(--disco-cardio);
+}
+
+/* Discos grandes, apilados en diagonal */
+.portada-discos {
+  position: relative;
+  min-height: 22rem;
+}
+
+.disco-grande {
+  --color-disco: var(--aluminio);
+  position: absolute;
+  width: clamp(9rem, 20vw, 15rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, var(--acero) 0 9%, transparent 9.6%),
+    radial-gradient(circle at center, transparent 0 34%, rgba(255, 255, 255, 0.6) 35% 39%, transparent 40%),
+    var(--color-disco);
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, 0.25), 0 18px 30px rgba(0, 0, 0, 0.35);
+  animation: flotar 6s ease-in-out infinite;
+}
+
+.disco-grande.disco-fuerza {
+  --color-disco: var(--disco-fuerza);
+  top: 0;
+  left: 6%;
+}
+
+.disco-grande.disco-agilidad {
+  --color-disco: var(--disco-agilidad);
+  top: 18%;
+  right: 0;
+  animation-delay: -1.5s;
+}
+
+.disco-grande.disco-cardio {
+  --color-disco: var(--disco-cardio);
+  bottom: 4%;
+  left: 0;
+  animation-delay: -3s;
+}
+
+.disco-grande.disco-coordinacion {
+  --color-disco: var(--disco-coordinacion);
+  bottom: 0;
+  right: 10%;
+  animation-delay: -4.5s;
+}
+
+@keyframes flotar {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(8deg);
+  }
+}
+
+/* Cinta con las cuatro capacidades */
+.cinta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  padding: 1rem;
+  font-family: var(--fuente-titulo);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tinta);
+  background: var(--disco-cardio);
+  border-top: 4px solid var(--tinta);
+  border-bottom: 4px solid var(--tinta);
+}
+
+.cinta .disco {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-right: 0.6rem;
+}
+
+/* Beneficios: tarjetas con borde de color que se levantan al pasar */
+.beneficios {
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 5rem) 1.5rem;
+}
+
+.beneficios h2 {
+  margin: 0 0 2rem;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  text-transform: uppercase;
+}
+
+.beneficios-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.5rem;
+}
+
+.beneficio {
+  --color-borde: var(--aluminio);
+  position: relative;
+  padding: 1.75rem 1.5rem 1.5rem;
+  background: var(--magnesio);
+  border: 2px solid var(--tinta);
+  border-top: 10px solid var(--color-borde);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.beneficio:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 8px 8px 0 var(--color-borde);
+}
+
+.beneficio-fuerza {
+  --color-borde: var(--disco-fuerza);
+}
+
+.beneficio-agilidad {
+  --color-borde: var(--disco-agilidad);
+}
+
+.beneficio-cardio {
+  --color-borde: var(--disco-cardio);
+}
+
+.beneficio-numero {
+  display: block;
+  font-family: var(--fuente-titulo);
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--color-borde);
+}
+
+.beneficio h3 {
+  margin: 0.5rem 0 0.4rem;
+  font-size: 1.9rem;
+  text-transform: uppercase;
+}
+
+.beneficio p {
+  margin: 0;
+  color: #4a5058;
+}
+
+/* Cierre */
+.cierre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+  padding: clamp(2rem, 5vw, 3.5rem) clamp(1.5rem, 6vw, 5rem);
+  color: #fff;
+  background: var(--acero);
+  border-top: 4px solid var(--tinta);
+}
+
+.cierre h2 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  text-transform: uppercase;
+}
+
+@media (max-width: 767.98px) {
+  .portada {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .portada-discos {
+    min-height: 15rem;
+  }
+  .disco-grande {
+    width: 8rem;
+  }
+  .cierre {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disco-grande {
+    animation: none;
+  }
+}
+
 /* --- Membresia vigente --------------------------------------------------- */
 
 .pase {

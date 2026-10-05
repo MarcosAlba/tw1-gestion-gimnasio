@@ -101,13 +101,10 @@ public class ControladorLoginTest {
 
   @Test
   public void registrarmeConRolInvalidoDeberiaVolverAFormularioYMostrarError() throws Exception {
-    // preparacion
     doThrow(RolInvalido.class).when(servicioLoginMock).registrar(usuarioMock);
 
-    // ejecucion
     ModelAndView modelAndView = controladorLogin.registrarme(usuarioMock);
 
-    // validacion
     assertThat(modelAndView.getViewName(), equalToIgnoringCase("nuevo-usuario"));
     assertThat(
       modelAndView.getModel().get("error").toString(),
@@ -117,13 +114,10 @@ public class ControladorLoginTest {
 
   @Test
   public void registrarmeConErrorDeberiaConservarLosDatosYaEscritos() throws Exception {
-    // preparacion
     doThrow(UsuarioExistente.class).when(servicioLoginMock).registrar(usuarioMock);
 
-    // ejecucion
     ModelAndView modelAndView = controladorLogin.registrarme(usuarioMock);
 
-    // validacion
     assertThat(modelAndView.getModel().get("usuario"), sameInstance(usuarioMock));
   }
 
@@ -165,10 +159,8 @@ public class ControladorLoginTest {
 
   @Test
   public void nuevoUsuarioDeberiaProponerElRolSocioPorDefecto() {
-    // ejecucion
     ModelAndView modelAndView = controladorLogin.nuevoUsuario();
 
-    // validacion
     Usuario usuario = (Usuario) modelAndView.getModel().get("usuario");
     assertThat(usuario.getRol(), equalToIgnoringCase("SOCIO"));
   }
@@ -183,11 +175,22 @@ public class ControladorLoginTest {
   }
 
   @Test
-  public void inicioDeberiaRedirigirALogin() {
-    // ejecucion
-    ModelAndView modelAndView = controladorLogin.inicio();
+  public void inicioSinSesionDeberiaMostrarLaBienvenida() {
+    when(requestMock.getSession()).thenReturn(sessionMock);
+    when(sessionMock.getAttribute("ROL")).thenReturn(null);
 
-    // validacion
-    assertThat(modelAndView.getViewName(), equalToIgnoringCase("redirect:/login"));
+    ModelAndView modelAndView = controladorLogin.inicio(requestMock);
+
+    assertThat(modelAndView.getViewName(), equalToIgnoringCase("bienvenida"));
+  }
+
+  @Test
+  public void inicioConSesionIniciadaDeberiaRedirigirAHome() {
+    when(requestMock.getSession()).thenReturn(sessionMock);
+    when(sessionMock.getAttribute("ROL")).thenReturn("SOCIO");
+
+    ModelAndView modelAndView = controladorLogin.inicio(requestMock);
+
+    assertThat(modelAndView.getViewName(), equalToIgnoringCase("redirect:/home"));
   }
 }

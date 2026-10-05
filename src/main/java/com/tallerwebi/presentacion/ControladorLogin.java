@@ -90,7 +90,13 @@ public class ControladorLogin {
   }
 
   @RequestMapping(path = "/", method = RequestMethod.GET)
-  public ModelAndView inicio() {
-    return new ModelAndView("redirect:/login");
+  public ModelAndView inicio(HttpServletRequest request) {
+    if(request.getSession().getAttribute("ROL") != null){
+      return new ModelAndView("redirect:/home");
+    } else {
+      return new ModelAndView("bienvenida");
+    }
   }
+
+
 }
