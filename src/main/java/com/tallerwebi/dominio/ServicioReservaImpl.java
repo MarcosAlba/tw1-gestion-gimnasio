@@ -54,6 +54,9 @@ public class ServicioReservaImpl implements ServicioReserva {
     reserva.setEstado(EstadoReserva.CONFIRMADA);
     reserva.setFechaReserva(LocalDateTime.now());
     repoReserva.guardar(reserva);
+
+    clase.setCupo(clase.getCupo() - 1);
+    repoClase.modificar(clase);
   }
 
   private Usuario buscarSocio(Long socioId) {
@@ -93,6 +96,10 @@ public class ServicioReservaImpl implements ServicioReserva {
     }
     reserva.setEstado(EstadoReserva.CANCELADA);
     repoReserva.modificar(reserva);
+
+    Clase clase = reserva.getClase();
+    clase.setCupo(clase.getCupo() + 1);
+    repoClase.modificar(clase);
   }
 
   @Override

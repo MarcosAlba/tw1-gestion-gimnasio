@@ -24,6 +24,11 @@ public class RepositorioClaseImpl implements RepositorioClase {
   }
 
   @Override
+  public void modificar(Clase clase) {
+    sessionFactory.getCurrentSession().merge(clase);
+  }
+
+  @Override
   public Clase buscarPorId(Long id) {
     return sessionFactory.getCurrentSession().get(Clase.class, id);
   }
