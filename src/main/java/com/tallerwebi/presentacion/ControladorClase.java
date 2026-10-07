@@ -3,6 +3,7 @@ package com.tallerwebi.presentacion;
 import com.tallerwebi.dominio.Clase;
 import com.tallerwebi.dominio.enums.CapacidadFisica;
 import com.tallerwebi.dominio.excepcion.EntrenadorInvalido;
+import com.tallerwebi.dominio.excepcion.FechaClaseInvalida;
 import com.tallerwebi.dominio.interfaces.ServicioClase;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Locale;
@@ -62,10 +63,9 @@ public class ControladorClase {
     try {
       servicioClase.crear(clase, entrenadorId);
     } catch (EntrenadorInvalido e) {
-      Map<String, Object> modelo = new ModelMap();
-      modelo.put(DATOS_CLASE, datosClase);
-      modelo.put("error", "El usuario no es un entrenador valido");
-      return new ModelAndView(VISTA_NUEVA_CLASE, modelo);
+      return volverAlFormulario(datosClase, "El usuario no es un entrenador valido");
+    } catch (FechaClaseInvalida e) {
+      return volverAlFormulario(datosClase, "La fecha de la clase no puede ser anterior a hoy");
     }
     return new ModelAndView("redirect:/clases");
   }
@@ -107,5 +107,12 @@ public class ControladorClase {
 
   private boolean esEntrenador(HttpServletRequest request) {
     return "ENTRENADOR".equals(request.getSession().getAttribute("ROL"));
+  }
+
+  private ModelAndView volverAlFormulario(DatosClase datosClase, String mensaje) {
+    Map<String, Object> modelo = new ModelMap();
+    modelo.put(DATOS_CLASE, datosClase);
+    modelo.put("error", mensaje);
+    return new ModelAndView(VISTA_NUEVA_CLASE, modelo);
   }
 }
