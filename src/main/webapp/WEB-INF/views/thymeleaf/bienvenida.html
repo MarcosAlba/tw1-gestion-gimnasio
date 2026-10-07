@@ -15,10 +15,6 @@
         <p class="portada-etiqueta">Gimnasio UNLAM</p>
         <h1>Entrená.<br>Reservá.<br><span>Superate.</span></h1>
         <p class="portada-bajada">Clases, membresía y rutinas armadas para vos, en un solo lugar.</p>
-        <div class="portada-acciones">
-          <a id="btn-ingresar" class="btn btn-lg btn-portada" th:href="@{/login}">Ingresar</a>
-          <a id="btn-crear-cuenta" class="portada-enlace" th:href="@{/nuevo-usuario}">Crear una cuenta</a>
-        </div>
       </div>
 
       <div class="portada-discos" aria-hidden="true">
@@ -59,15 +55,180 @@
       </ul>
     </section>
 
-    <!-- Cierre -->
-    <section class="cierre">
-      <h2>¿Listo para empezar?</h2>
-      <a class="btn btn-lg btn-portada" th:href="@{/nuevo-usuario}">Crear mi cuenta</a>
+    <!-- Planes en tarjetas -->
+    <section class="planes">
+      <h2>Elegí tu plan</h2>
+      <p class="semana-bajada">Tres duraciones, el mismo acceso a todas las clases. Cuanto más largo, más tiempo para lograr tu objetivo.</p>
+      <ul class="planes-lista">
+        <li class="plan">
+          <h3>Mensual</h3>
+          <p class="plan-duracion"><b>1</b> mes</p>
+          <ul class="plan-incluye">
+            <li>Reserva de clases</li>
+            <li>Rutina para tu deporte</li>
+            <li>Controlá tu vencimiento</li>
+          </ul>
+          <a class="btn btn-outline-dark" th:href="@{/nuevo-usuario}">Empezar</a>
+        </li>
+        <li class="plan plan-destacado">
+          <span class="plan-cinta">Más elegido</span>
+          <h3>Trimestral</h3>
+          <p class="plan-duracion"><b>3</b> meses</p>
+          <ul class="plan-incluye">
+            <li>Reserva de clases</li>
+            <li>Rutina para tu deporte</li>
+            <li>Controlá tu vencimiento</li>
+          </ul>
+          <a class="btn btn-portada" th:href="@{/nuevo-usuario}">Empezar</a>
+        </li>
+        <li class="plan">
+          <h3>Anual</h3>
+          <p class="plan-duracion"><b>12</b> meses</p>
+          <ul class="plan-incluye">
+            <li>Reserva de clases</li>
+            <li>Rutina para tu deporte</li>
+            <li>Controlá tu vencimiento</li>
+          </ul>
+          <a class="btn btn-outline-dark" th:href="@{/nuevo-usuario}">Empezar</a>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Nuestras clases: una destacada y la lista para elegir -->
+    <section class="clases">
+      <h2>Nuestras clases</h2>
+      <div class="clases-panel">
+        <article class="clase-destacada" id="clase-destacada">
+          <img id="clase-foto" th:src="@{/img/funcional.jpg}" alt="Clase de Funcional">
+          <div class="clase-info">
+            <p class="clase-etiquetas">
+              <span id="clase-intensidad">Intensidad media</span>
+              <span id="clase-capacidad">Fuerza</span>
+            </p>
+            <h3 id="clase-nombre">Funcional</h3>
+            <p id="clase-descripcion">Circuitos con peso corporal, kettlebells y soga para ganar fuerza y resistencia.</p>
+            <a id="clase-horarios" class="btn btn-portada" th:href="@{/horarios(capacidad=FUERZA)}">Ver horarios</a>
+          </div>
+        </article>
+
+        <ul class="clases-lista">
+          <li>
+            <button type="button" class="clase-item clase-fuerza activa" aria-pressed="true"
+                    th:attr="data-foto=@{/img/funcional.jpg}"
+                    data-filtro="FUERZA" data-nombre="Funcional" data-capacidad="Fuerza" data-intensidad="Intensidad media"
+                    data-descripcion="Circuitos con peso corporal, kettlebells y soga para ganar fuerza y resistencia.">
+              <img th:src="@{/img/funcional.jpg}" alt="">
+              <span class="clase-item-nombre">Funcional<small>Fuerza</small></span>
+              <span class="clase-item-nivel">Media</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="clase-item clase-cardio" aria-pressed="false"
+                    th:attr="data-foto=@{/img/spinning.webp}"
+                    data-filtro="CARDIO" data-nombre="Spinning" data-capacidad="Cardio" data-intensidad="Intensidad alta"
+                    data-descripcion="Pedaleo al ritmo de la música, con cambios de resistencia para quemar calorías.">
+              <img th:src="@{/img/spinning.webp}" alt="">
+              <span class="clase-item-nombre">Spinning<small>Cardio</small></span>
+              <span class="clase-item-nivel">Alta</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="clase-item clase-agilidad" aria-pressed="false"
+                    th:attr="data-foto=@{/img/agilidad.webp}"
+                    data-filtro="AGILIDAD" data-nombre="Agilidad en cancha" data-capacidad="Agilidad" data-intensidad="Intensidad media"
+                    data-descripcion="Escalera, conos y cambios de dirección para ganar velocidad de reacción."
+                    >
+              <img th:src="@{/img/agilidad.webp}" alt="">
+              <span class="clase-item-nombre">Agilidad en cancha<small>Agilidad</small></span>
+              <span class="clase-item-nivel">Media</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="clase-item clase-coordinacion" aria-pressed="false"
+                    th:attr="data-foto=@{/img/coordinacion.webp}"
+                    data-filtro="COORDINACION" data-nombre="Coordinación y equilibrio" data-capacidad="Coordinación" data-intensidad="Intensidad baja"
+                    data-descripcion="Pelota, equilibrio y control del cuerpo. Para todo el mundo, sin contraindicaciones."
+                    >
+              <img th:src="@{/img/coordinacion.webp}" alt="">
+              <span class="clase-item-nombre">Coordinación y equilibrio<small>Coordinación</small></span>
+              <span class="clase-item-nivel">Baja</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="clase-item clase-cardio" aria-pressed="false"
+                    th:attr="data-foto=@{/img/cardio.jpg}"
+                    data-filtro="CARDIO" data-nombre="Cardio al aire libre" data-capacidad="Cardio" data-intensidad="Intensidad media"
+                    data-descripcion="Trote grupal por la zona, con ritmos para todos los niveles."
+                    >
+              <img th:src="@{/img/cardio.jpg}" alt="">
+              <span class="clase-item-nombre">Cardio al aire libre<small>Cardio</small></span>
+              <span class="clase-item-nivel">Media</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <p class="clases-todas"><a class="btn btn-outline-dark" th:href="@{/horarios}">Ver todas las clases</a></p>
+    </section>
+
+    <!-- Rutinas por deporte: elegís un deporte y la tarjeta muestra qué capacidades necesita -->
+    <section class="deportes">
+      <h2>Una rutina para tu deporte</h2>
+      <p class="semana-bajada">Elegís tu deporte y armamos ejercicios de cada capacidad según lo que más necesita.</p>
+
+      <div class="deportes-chips">
+        <button type="button" class="deporte-chip activo" aria-pressed="true"
+                th:attr="data-foto=@{/img/deportes/tenis.webp}" data-nombre="Tenis"
+                data-descripcion="Cambios de dirección rápidos y golpes precisos: la agilidad manda."
+                data-agilidad="3" data-cardio="2" data-coordinacion="2" data-fuerza="1">Tenis</button>
+        <button type="button" class="deporte-chip" aria-pressed="false"
+                th:attr="data-foto=@{/img/deportes/futbol.webp}" data-nombre="Fútbol"
+                data-descripcion="Noventa minutos de carreras y piques: agilidad y cardio por igual."
+                data-agilidad="3" data-cardio="3" data-coordinacion="2" data-fuerza="2">Fútbol</button>
+        <button type="button" class="deporte-chip" aria-pressed="false"
+                th:attr="data-foto=@{/img/deportes/padel.webp}" data-nombre="Pádel"
+                data-descripcion="Reflejos en la red y control de la pelota en cada rebote."
+                data-agilidad="3" data-cardio="2" data-coordinacion="3" data-fuerza="1">Pádel</button>
+        <button type="button" class="deporte-chip" aria-pressed="false"
+                th:attr="data-foto=@{/img/deportes/boxeo.webp}" data-nombre="Boxeo"
+                data-descripcion="Potencia, resistencia y coordinación de manos y pies en cada round."
+                data-agilidad="2" data-cardio="3" data-coordinacion="3" data-fuerza="3">Boxeo</button>
+        <button type="button" class="deporte-chip" aria-pressed="false"
+                th:attr="data-foto=@{/img/deportes/rugby.webp}" data-nombre="Rugby"
+                data-descripcion="Choque y empuje: fuerza y cardio para aguantar todo el partido."
+                data-agilidad="2" data-cardio="3" data-coordinacion="1" data-fuerza="3">Rugby</button>
+        <button type="button" class="deporte-chip" aria-pressed="false"
+                th:attr="data-foto=@{/img/deportes/basquet.webp}" data-nombre="Básquet"
+                data-descripcion="Saltos, piques y cambios de ritmo constantes en toda la cancha."
+                data-agilidad="3" data-cardio="3" data-coordinacion="2" data-fuerza="2">Básquet</button>
+        <button type="button" class="deporte-chip" aria-pressed="false"
+                th:attr="data-foto=@{/img/deportes/handball.webp}" data-nombre="Handball"
+                data-descripcion="Velocidad, lanzamientos y contacto en espacios cortos."
+                data-agilidad="3" data-cardio="3" data-coordinacion="2" data-fuerza="2">Handball</button>
+      </div>
+
+      <div class="deporte-panel">
+        <div class="deporte-foto">
+          <span id="deporte-marca" aria-hidden="true">Tenis</span>
+          <img id="deporte-foto" th:src="@{/img/deportes/tenis.webp}" alt="" onerror="this.hidden = true">
+        </div>
+        <div class="deporte-detalle">
+          <h3 id="deporte-nombre">Tenis</h3>
+          <p id="deporte-descripcion">Cambios de dirección rápidos y golpes precisos: la agilidad manda.</p>
+          <dl>
+            <dt>Agilidad</dt><dd id="deporte-agilidad" class="intensidad intensidad-agilidad" data-n="3"><i></i><i></i><i></i></dd>
+            <dt>Cardio</dt><dd id="deporte-cardio" class="intensidad intensidad-cardio" data-n="2"><i></i><i></i><i></i></dd>
+            <dt>Coordinación</dt><dd id="deporte-coordinacion" class="intensidad intensidad-coordinacion" data-n="2"><i></i><i></i><i></i></dd>
+            <dt>Fuerza</dt><dd id="deporte-fuerza" class="intensidad intensidad-fuerza" data-n="1"><i></i><i></i><i></i></dd>
+          </dl>
+          <a id="btn-generar-rutina" class="btn btn-portada" th:href="@{/login(volver='/rutina')}">Generá tu rutina</a>
+        </div>
+      </div>
     </section>
 
   </main>
 
   <th:block th:replace="~{fragmentos :: scripts}"></th:block>
+  <script th:src="@{/js/bienvenida.js}"></script>
 
 </body>
 

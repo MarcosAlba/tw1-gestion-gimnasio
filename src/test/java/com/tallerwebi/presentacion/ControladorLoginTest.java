@@ -42,7 +42,7 @@ public class ControladorLoginTest {
     when(servicioLoginMock.consultarUsuario(anyString(), anyString())).thenReturn(null);
 
     // ejecucion
-    ModelAndView modelAndView = controladorLogin.validarLogin(datosLoginMock, requestMock);
+    ModelAndView modelAndView = controladorLogin.validarLogin(datosLoginMock, requestMock, null);
 
     // validacion
     assertThat(modelAndView.getViewName(), equalToIgnoringCase("login"));
@@ -64,10 +64,8 @@ public class ControladorLoginTest {
     when(servicioLoginMock.consultarUsuario(anyString(), anyString()))
       .thenReturn(usuarioEncontradoMock);
 
-    // ejecucion
-    ModelAndView modelAndView = controladorLogin.validarLogin(datosLoginMock, requestMock);
+    ModelAndView modelAndView = controladorLogin.validarLogin(datosLoginMock, requestMock, null);
 
-    // validacion
     assertThat(modelAndView.getViewName(), equalToIgnoringCase("redirect:/home"));
     verify(sessionMock, times(1)).setAttribute("ROL", usuarioEncontradoMock.getRol());
     verify(sessionMock, times(1)).setAttribute("ID_USUARIO", 1L);
@@ -190,6 +188,63 @@ public class ControladorLoginTest {
     when(sessionMock.getAttribute("ROL")).thenReturn("SOCIO");
 
     ModelAndView modelAndView = controladorLogin.inicio(requestMock);
+
+    assertThat(modelAndView.getViewName(), equalToIgnoringCase("redirect:/home"));
+  }
+
+  @Test
+  public void loginCorrectoConVolverValidoDeberiaIrAlDestinoPedido() {
+    Usuario usuarioEncontradoMock = mock(Usuario.class);
+    when(usuarioEncontradoMock.getRol()).thenReturn("SOCIO");
+    when(usuarioEncontradoMock.getId()).thenReturn(1L);
+
+    when(requestMock.getSession()).thenReturn(sessionMock);
+    when(servicioLoginMock.consultarUsuario(anyString(), anyString()))
+      .thenReturn(usuarioEncontradoMock);
+
+    ModelAndView modelAndView = controladorLogin.validarLogin(
+      datosLoginMock,
+      requestMock,
+      "/rutina"
+    );
+
+    assertThat(modelAndView.getViewName(), equalToIgnoringCase("redirect:/rutina"));
+  }
+
+  @Test
+  public void loginCorrectoConVolverExternoDeberiaIrAHome() {
+    Usuario usuarioEncontradoMock = mock(Usuario.class);
+    when(usuarioEncontradoMock.getRol()).thenReturn("SOCIO");
+    when(usuarioEncontradoMock.getId()).thenReturn(1L);
+
+    when(requestMock.getSession()).thenReturn(sessionMock);
+    when(servicioLoginMock.consultarUsuario(anyString(), anyString()))
+      .thenReturn(usuarioEncontradoMock);
+
+    ModelAndView modelAndView = controladorLogin.validarLogin(
+      datosLoginMock,
+      requestMock,
+      "https://otro.com"
+    );
+
+    assertThat(modelAndView.getViewName(), equalToIgnoringCase("redirect:/home"));
+  }
+
+  @Test
+  public void loginCorrectoConVolverDobleBarraDeberiaIrAHome() {
+    Usuario usuarioEncontradoMock = mock(Usuario.class);
+    when(usuarioEncontradoMock.getRol()).thenReturn("SOCIO");
+    when(usuarioEncontradoMock.getId()).thenReturn(1L);
+
+    when(requestMock.getSession()).thenReturn(sessionMock);
+    when(servicioLoginMock.consultarUsuario(anyString(), anyString()))
+      .thenReturn(usuarioEncontradoMock);
+
+    ModelAndView modelAndView = controladorLogin.validarLogin(
+      datosLoginMock,
+      requestMock,
+      "//otro.com"
+    );
 
     assertThat(modelAndView.getViewName(), equalToIgnoringCase("redirect:/home"));
   }

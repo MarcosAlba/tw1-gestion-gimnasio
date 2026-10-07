@@ -1,0 +1,83 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!--
+  Horarios de clases, pagina publica (no requiere sesion).
+  Modelo que espera del controlador:
+    clasesPorDia          Map<LocalDate, List<Clase>> en orden de fecha, con un dia por columna
+                          (los dias sin clases van con la lista vacia)
+    capacidadSeleccionada CapacidadFisica del filtro, o null si se ven todas
+-->
+
+<head th:replace="~{fragmentos :: cabecera('Horarios')}"></head>
+
+<body>
+
+  <nav th:replace="~{fragmentos :: barra('horarios')}"></nav>
+
+  <main role="main" class="horarios">
+
+    <header class="horarios-cabecera">
+      <p class="portada-etiqueta">Gimnasio UNLAM</p>
+      <h1>Horarios de clases</h1>
+      <p class="portada-bajada">Elegí el tipo de clase y mirá cuándo se dicta. Para reservar lugar necesitás una cuenta y una membresía vigente.</p>
+
+      <nav class="filtros" aria-label="Filtrar por tipo de clase">
+        <a class="filtro" th:href="@{/horarios}"
+           th:classappend="${capacidadSeleccionada == null} ? 'activo'"
+           th:aria-current="${capacidadSeleccionada == null} ? 'true'">Todas</a>
+        <a class="filtro filtro-fuerza" th:href="@{/horarios(capacidad=FUERZA)}"
+           th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'FUERZA'} ? 'activo'"
+           th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'FUERZA'} ? 'true'">Fuerza</a>
+        <a class="filtro filtro-agilidad" th:href="@{/horarios(capacidad=AGILIDAD)}"
+           th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'AGILIDAD'} ? 'activo'"
+           th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'AGILIDAD'} ? 'true'">Agilidad</a>
+        <a class="filtro filtro-cardio" th:href="@{/horarios(capacidad=CARDIO)}"
+           th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'CARDIO'} ? 'activo'"
+           th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'CARDIO'} ? 'true'">Cardio</a>
+        <a class="filtro filtro-coordinacion" th:href="@{/horarios(capacidad=COORDINACION)}"
+           th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'COORDINACION'} ? 'activo'"
+           th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'COORDINACION'} ? 'true'">Coordinación</a>
+      </nav>
+    </header>
+
+    <section class="semana">
+      <div class="semana-grilla" th:style="'--dias:' + ${#maps.size(clasesPorDia)}">
+        <div class="dia" th:each="dia : ${clasesPorDia}">
+          <h3>
+            <span th:text="${#temporals.dayOfWeekName(dia.key)}">Lunes</span>
+            <small th:text="${#temporals.format(dia.key, 'dd/MM')}">05/10</small>
+          </h3>
+          <div class="turno" th:each="c : ${dia.value}"
+               th:classappend="'turno-' + ${#strings.toLowerCase(c.capacidad.name())}">
+            <b th:text="${#temporals.format(c.inicio, 'HH:mm')}">18:00</b>
+            <span th:text="${c.nombre}">Funcional</span>
+            <small th:text="${c.lugar} + ' · ' + ${c.duracion} + ' min'">Sala 1 · 60 min</small>
+          </div>
+          <p class="dia-vacio" th:if="${#lists.isEmpty(dia.value)}">Sin clases</p>
+        </div>
+      </div>
+
+      <ul class="leyenda" aria-label="Referencias de colores">
+        <li><i class="disco disco-fuerza"></i>Fuerza</li>
+        <li><i class="disco disco-agilidad"></i>Agilidad</li>
+        <li><i class="disco disco-cardio"></i>Cardio</li>
+        <li><i class="disco disco-coordinacion"></i>Coordinación</li>
+      </ul>
+    </section>
+
+    <section class="cierre" th:if="${session.ROL == null}">
+      <h2>¿Listo para reservar?</h2>
+      <div class="portada-acciones">
+        <a class="btn btn-lg btn-portada" th:href="@{/nuevo-usuario}">Crear mi cuenta</a>
+        <a class="portada-enlace" th:href="@{/login(volver='/clases')}">Ya tengo cuenta</a>
+      </div>
+    </section>
+
+  </main>
+
+  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
+
+</body>
+
+</html>

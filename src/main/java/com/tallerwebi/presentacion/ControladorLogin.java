@@ -12,6 +12,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
@@ -38,7 +39,8 @@ public class ControladorLogin {
   @RequestMapping(path = "/validar-login", method = RequestMethod.POST)
   public ModelAndView validarLogin(
     @ModelAttribute("datosLogin") DatosLogin datosLogin,
-    HttpServletRequest request
+    HttpServletRequest request,
+    @RequestParam(name = "volver", required = false) String volver
   ) {
     Usuario usuarioBuscado = servicioLogin.consultarUsuario(
       datosLogin.getEmail(),
@@ -47,6 +49,10 @@ public class ControladorLogin {
     if (usuarioBuscado != null) {
       request.getSession().setAttribute("ROL", usuarioBuscado.getRol());
       request.getSession().setAttribute("ID_USUARIO", usuarioBuscado.getId());
+
+      if (volver != null && volver.startsWith("/") && !volver.startsWith("//")) {
+        return new ModelAndView("redirect:" + volver);
+      }
       return new ModelAndView("redirect:/home");
     } else {
       Map<String, Object> model = new ModelMap();
@@ -91,12 +97,10 @@ public class ControladorLogin {
 
   @RequestMapping(path = "/", method = RequestMethod.GET)
   public ModelAndView inicio(HttpServletRequest request) {
-    if(request.getSession().getAttribute("ROL") != null){
+    if (request.getSession().getAttribute("ROL") != null) {
       return new ModelAndView("redirect:/home");
     } else {
       return new ModelAndView("bienvenida");
     }
   }
-
-
 }
