@@ -9,6 +9,7 @@ import com.tallerwebi.dominio.enums.TipoMembresia;
 import com.tallerwebi.dominio.interfaces.ServicioMembresia;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,6 +74,20 @@ public class ControladorMembresiaTest {
 
     assertThat(modelAndView.getViewName(), equalTo("redirect:/login"));
     verify(servicioMock, never()).registrar(any(), any());
+  }
+
+  @Test
+  public void deberiaMostrarHistorialVacioYSinMembresiaVigenteSiElSocioEsNuevo() {
+    dadoQueSoy("SOCIO", 10L);
+    List<Membresia> historialVacio = new ArrayList<>();
+    when(servicioMock.historial(10L)).thenReturn(historialVacio);
+    when(servicioMock.obtenerVigente(10L)).thenReturn(null);
+
+    ModelAndView modelAndView = controlador.verMembresias(requestMock);
+
+    assertThat(modelAndView.getViewName(), equalTo("membresias"));
+    assertThat(modelAndView.getModel().get("historial"), equalTo(historialVacio));
+    assertThat(modelAndView.getModel().get("vigente"), equalTo(null));
   }
 
   private void dadoQueSoy(String rol, Long id) {

@@ -177,8 +177,8 @@ public class ControladorClaseTest {
 
     assertThat(modelAndView.getViewName(), equalTo("nueva-clase"));
     assertThat(
-            modelAndView.getModel().get("error"),
-            equalTo("El usuario no es un entrenador valido")
+      modelAndView.getModel().get("error"),
+      equalTo("El usuario no es un entrenador valido")
     );
     assertThat(modelAndView.getModel().get("datosClase"), equalTo(datos));
   }

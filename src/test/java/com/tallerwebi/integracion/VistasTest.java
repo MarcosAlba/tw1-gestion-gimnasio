@@ -176,6 +176,23 @@ public class VistasTest {
   @Test
   @Transactional
   @Rollback
+  public void deberiaMostrarMensajeDeSinMembresiasSiElSocioEsNuevo() throws Exception {
+    Session sesion = sessionFactory.getCurrentSession();
+    Usuario socioNuevo = usuario("nuevo@test.com", "SOCIO", null);
+    sesion.persist(socioNuevo);
+
+    MockHttpServletRequestBuilder pedido = get("/membresias")
+      .sessionAttr("ROL", "SOCIO")
+      .sessionAttr("ID_USUARIO", socioNuevo.getId());
+    String html = pagina(pedido);
+
+    assertThat(html, containsString("Sin membresía vigente"));
+    assertThat(html, containsString("Todavía no tenés membresías"));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
   public void deberiaMostrarLaRutinaConLaDificultadComoSegmentos() throws Exception {
     dadoQueExistenDatosDeEjemplo();
 
