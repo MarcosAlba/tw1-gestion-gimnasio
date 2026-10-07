@@ -1,8 +1,7 @@
 package com.tallerwebi.presentacion;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -13,8 +12,11 @@ import com.tallerwebi.dominio.excepcion.EntrenadorInvalido;
 import com.tallerwebi.dominio.interfaces.ServicioClase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.ModelAndView;
@@ -135,6 +137,33 @@ public class ControladorClaseTest {
   private void dadoQueSoy(String rol, Long id) {
     when(sessionMock.getAttribute("ROL")).thenReturn(rol);
     when(sessionMock.getAttribute("ID_USUARIO")).thenReturn(id);
+  }
+
+  @Test
+  public void deberiaMostrarLosHorariosSinPedirSesion() {
+    when(sessionMock.getAttribute("ROL")).thenReturn(null);
+    Map<LocalDate, List<Clase>> semana = new LinkedHashMap<>();
+    when(servicioMock.listarSemana(null)).thenReturn(semana);
+
+    ModelAndView modelAndView = controlador.verHorarios(null);
+
+    assertThat(modelAndView.getViewName(), equalTo("horarios"));
+    assertThat(modelAndView.getModel().get("clasesPorDia"), equalTo(semana));
+    assertThat(modelAndView.getModel().get("capacidadSeleccionada"), nullValue());
+  }
+
+  @Test
+  public void deberiaPasarLaCapacidadPedidaAlServicioYAlModelo() {
+    Map<LocalDate, List<Clase>> semana = new LinkedHashMap<>();
+    when(servicioMock.listarSemana(CapacidadFisica.CARDIO)).thenReturn(semana);
+
+    ModelAndView modelAndView = controlador.verHorarios("CARDIO");
+
+    verify(servicioMock).listarSemana(CapacidadFisica.CARDIO);
+    assertThat(
+      modelAndView.getModel().get("capacidadSeleccionada"),
+      equalTo(CapacidadFisica.CARDIO)
+    );
   }
 
   private DatosClase dadoQueTengoLosDatosDeUnaClase() {
