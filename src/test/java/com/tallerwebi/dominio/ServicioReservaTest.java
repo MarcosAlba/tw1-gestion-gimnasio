@@ -150,6 +150,35 @@ public class ServicioReservaTest {
     assertThat(resultado, equalTo(reservas));
   }
 
+  @Test
+  public void deberiaRestarUnoAlCupoDeLaClaseAlReservar() throws Exception {
+    clase.setCupo(5);
+    when(repoReservaMock.existeConfirmada(1L, 5L)).thenReturn(false);
+    when(repoReservaMock.contarConfirmadas(5L)).thenReturn(0);
+
+    servicio.reservar(1L, 5L);
+
+    assertThat(clase.getCupo(), equalTo(4));
+    verify(repoClaseMock, times(1)).modificar(clase);
+  }
+
+  @Test
+  public void deberiaSumarUnoAlCupoDeLaClaseSiCanceloLaClase() throws Exception {
+    clase.setCupo(4);
+
+    Reserva reserva = new Reserva();
+    reserva.setId(7L);
+    reserva.setSocio(socio);
+    reserva.setClase(clase);
+    reserva.setEstado(EstadoReserva.CONFIRMADA);
+
+    when(repoReservaMock.buscarPorId(7L)).thenReturn(reserva);
+    servicio.cancelar(1L, 7L);
+
+    assertThat(clase.getCupo(), equalTo(5));
+    verify(repoClaseMock, times(1)).modificar(clase);
+  }
+
   private Reserva dadoQueExisteUnaReservaDe(Usuario duenio, Long reservaId) {
     Reserva reserva = new Reserva();
     reserva.setId(reservaId);
