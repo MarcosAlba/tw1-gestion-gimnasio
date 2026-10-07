@@ -8,6 +8,7 @@ import static org.mockito.Mockito.*;
 
 import com.tallerwebi.dominio.enums.CapacidadFisica;
 import com.tallerwebi.dominio.excepcion.EntrenadorInvalido;
+import com.tallerwebi.dominio.excepcion.FechaClaseInvalida;
 import com.tallerwebi.dominio.interfaces.RepositorioClase;
 import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
 import com.tallerwebi.dominio.interfaces.ServicioClase;
@@ -35,6 +36,7 @@ public class ServicioClaseTest {
   public void deberiaCrearUnaClaseAsignandoleElEntrenador() throws Exception {
     Usuario entrenador = dadoQueExisteUnUsuarioConRol(1L, "ENTRENADOR");
     Clase clase = new Clase();
+    clase.setInicio(LocalDateTime.now().plusDays(1));
 
     servicio.crear(clase, 1L);
 
@@ -124,6 +126,16 @@ public class ServicioClaseTest {
 
     assertThat(semana.size(), equalTo(7));
     assertThat(semana.values().stream().allMatch(List::isEmpty), equalTo(true));
+  }
+
+  @Test
+  public void noDeberiaCrearUnaClaseSiLaFechaYaPaso() {
+    dadoQueExisteUnUsuarioConRol(1L, "ENTRENADOR");
+    Clase clase = new Clase();
+    clase.setInicio(LocalDateTime.now().minusDays(1));
+
+    assertThrows(FechaClaseInvalida.class, () -> servicio.crear(clase, 1L));
+    verify(repoClaseMock, never()).guardar(any(Clase.class));
   }
 
   private Usuario dadoQueExisteUnUsuarioConRol(Long id, String rol) {

@@ -2,6 +2,7 @@ package com.tallerwebi.dominio;
 
 import com.tallerwebi.dominio.enums.CapacidadFisica;
 import com.tallerwebi.dominio.excepcion.EntrenadorInvalido;
+import com.tallerwebi.dominio.excepcion.FechaClaseInvalida;
 import com.tallerwebi.dominio.interfaces.RepositorioClase;
 import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
 import com.tallerwebi.dominio.interfaces.ServicioClase;
@@ -32,11 +33,16 @@ public class ServicioClaseImpl implements ServicioClase {
   }
 
   @Override
-  public void crear(Clase clase, Long entrenadorId) throws EntrenadorInvalido {
+  public void crear(Clase clase, Long entrenadorId) throws EntrenadorInvalido, FechaClaseInvalida {
     Usuario entrenador = repoUsuario.buscarPorId(entrenadorId);
     if (entrenador == null || !"ENTRENADOR".equals(entrenador.getRol())) {
       throw new EntrenadorInvalido();
     }
+
+    if (clase.getInicio() == null || clase.getInicio().isBefore(LocalDateTime.now())) {
+      throw new FechaClaseInvalida();
+    }
+
     clase.setEntrenador(entrenador);
     repoClase.guardar(clase);
   }

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.*;
 import com.tallerwebi.dominio.Clase;
 import com.tallerwebi.dominio.enums.CapacidadFisica;
 import com.tallerwebi.dominio.excepcion.EntrenadorInvalido;
+import com.tallerwebi.dominio.excepcion.FechaClaseInvalida;
 import com.tallerwebi.dominio.interfaces.ServicioClase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -86,17 +87,17 @@ public class ControladorClaseTest {
   }
 
   @Test
-  public void deberiaVolverAlFormularioSiElEntrenadorEsInvalido() throws Exception {
+  public void deberiaVolverAlFormularioSiLaFechaYaPaso() throws Exception {
     dadoQueSoy("ENTRENADOR", 1L);
     DatosClase datos = dadoQueTengoLosDatosDeUnaClase();
-    doThrow(new EntrenadorInvalido()).when(servicioMock).crear(any(Clase.class), eq(1L));
+    doThrow(new FechaClaseInvalida()).when(servicioMock).crear(any(Clase.class), eq(1L));
 
     ModelAndView modelAndView = controlador.guardarClase(datos, requestMock);
 
     assertThat(modelAndView.getViewName(), equalTo("nueva-clase"));
     assertThat(
       modelAndView.getModel().get("error"),
-      equalTo("El usuario no es un entrenador valido")
+      equalTo("La fecha de la clase no puede ser anterior a hoy")
     );
     assertThat(modelAndView.getModel().get("datosClase"), equalTo(datos));
   }
@@ -164,6 +165,22 @@ public class ControladorClaseTest {
       modelAndView.getModel().get("capacidadSeleccionada"),
       equalTo(CapacidadFisica.CARDIO)
     );
+  }
+
+  @Test
+  public void deberiaVolverAlFormularioSiElEntrenadorEsInvalido() throws Exception {
+    dadoQueSoy("ENTRENADOR", 1L);
+    DatosClase datos = dadoQueTengoLosDatosDeUnaClase();
+    doThrow(new EntrenadorInvalido()).when(servicioMock).crear(any(Clase.class), eq(1L));
+
+    ModelAndView modelAndView = controlador.guardarClase(datos, requestMock);
+
+    assertThat(modelAndView.getViewName(), equalTo("nueva-clase"));
+    assertThat(
+            modelAndView.getModel().get("error"),
+            equalTo("El usuario no es un entrenador valido")
+    );
+    assertThat(modelAndView.getModel().get("datosClase"), equalTo(datos));
   }
 
   private DatosClase dadoQueTengoLosDatosDeUnaClase() {
