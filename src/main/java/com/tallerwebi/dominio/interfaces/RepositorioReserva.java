@@ -8,6 +8,7 @@ public interface RepositorioReserva {
   void modificar(Reserva reserva);
   List<Reserva> buscarPorSocio(Long socioId);
   int contarConfirmadas(Long claseId);
-  boolean existeConfirmada(Long socioId, Long claseId);
+  boolean existeActiva(Long socioId, Long claseId);
   Reserva buscarPorId(Long id);
+  Reserva buscarPrimeraEnEspera(Long claseId);
 }

@@ -167,6 +167,20 @@ public class VistasTest {
   @Test
   @Transactional
   @Rollback
+  public void deberiaMostrarLasReservasEnListaDeEspera() throws Exception {
+    dadoQueExistenDatosDeEjemplo();
+    Clase yoga = clase("Yoga", CapacidadFisica.COORDINACION, 3);
+    sessionFactory.getCurrentSession().persist(yoga);
+    sessionFactory.getCurrentSession().persist(reserva(yoga, EstadoReserva.EN_ESPERA));
+
+    String html = pagina(comoSocio(get("/reservas")));
+
+    assertThat(html, containsString("En lista de espera"));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
   public void deberiaMostrarLaMembresiaVigenteYElHistorial() throws Exception {
     dadoQueExistenDatosDeEjemplo();
 

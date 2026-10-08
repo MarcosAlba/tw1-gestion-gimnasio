@@ -5,12 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import com.tallerwebi.dominio.enums.EstadoReserva;
 import com.tallerwebi.dominio.excepcion.ClaseNoEncontrada;
-import com.tallerwebi.dominio.excepcion.ClaseSinCupo;
 import com.tallerwebi.dominio.excepcion.MembresiaNoVigente;
 import com.tallerwebi.dominio.excepcion.ReservaDuplicada;
 import com.tallerwebi.dominio.excepcion.ReservaNoEncontrada;
@@ -57,7 +57,7 @@ public class ServicioReservaTest {
 
   @Test
   public void deberiaReservarUnaClaseConfirmandolaYGuardandola() throws Exception {
-    when(repoReservaMock.existeConfirmada(1L, 5L)).thenReturn(false);
+    when(repoReservaMock.existeActiva(1L, 5L)).thenReturn(false);
     when(repoReservaMock.contarConfirmadas(5L)).thenReturn(1);
 
     servicio.reservar(1L, 5L);
@@ -81,19 +81,70 @@ public class ServicioReservaTest {
 
   @Test
   public void noDeberiaReservarSiYaTieneUnaReservaConfirmadaParaLaClase() {
-    when(repoReservaMock.existeConfirmada(1L, 5L)).thenReturn(true);
+    when(repoReservaMock.existeActiva(1L, 5L)).thenReturn(true);
 
     assertThrows(ReservaDuplicada.class, () -> servicio.reservar(1L, 5L));
     verify(repoReservaMock, never()).guardar(any(Reserva.class));
   }
 
   @Test
-  public void noDeberiaReservarSiLaClaseNoTieneCupo() {
-    when(repoReservaMock.existeConfirmada(1L, 5L)).thenReturn(false);
-    when(repoReservaMock.contarConfirmadas(5L)).thenReturn(2);
+  public void deberiaAnotarAlSocioEnListaDeEsperaSiLaClaseEstaCompleta() throws Exception {
+    clase.setCupo(0);
+    when(repoReservaMock.existeActiva(1L, 5L)).thenReturn(false);
 
-    assertThrows(ClaseSinCupo.class, () -> servicio.reservar(1L, 5L));
+    servicio.reservar(1L, 5L);
+
+    ArgumentCaptor<Reserva> captor = ArgumentCaptor.forClass(Reserva.class);
+    verify(repoReservaMock, times(1)).guardar(captor.capture());
+    assertThat(captor.getValue().getEstado(), equalTo(EstadoReserva.EN_ESPERA));
+    assertThat(clase.getCupo(), equalTo(0));
+    verify(repoClaseMock, never()).modificar(clase);
+  }
+
+  @Test
+  public void noDeberiaAnotarDosVecesEnListaDeEsperaAlMismoSocio() {
+    clase.setCupo(0);
+    when(repoReservaMock.existeActiva(1L, 5L)).thenReturn(true);
+
+    assertThrows(ReservaDuplicada.class, () -> servicio.reservar(1L, 5L));
     verify(repoReservaMock, never()).guardar(any(Reserva.class));
+  }
+
+  @Test
+  public void noDeberiaAnotarEnListaDeEsperaSiElSocioNoTieneMembresiaVigente() {
+    clase.setCupo(0);
+    when(repoMembresiaMock.buscarVigente(eq(1L), any(LocalDate.class))).thenReturn(null);
+
+    assertThrows(MembresiaNoVigente.class, () -> servicio.reservar(1L, 5L));
+    verify(repoReservaMock, never()).guardar(any(Reserva.class));
+  }
+
+  @Test
+  public void deberiaPermitirAlSocioSalirDeLaListaDeEspera() {
+    Reserva reserva = dadoQueExisteUnaReservaDe(socio, 7L);
+    reserva.setEstado(EstadoReserva.EN_ESPERA);
+
+    servicio.cancelar(1L, 7L);
+
+    assertThat(reserva.getEstado(), equalTo(EstadoReserva.CANCELADA));
+    verify(repoReservaMock, times(1)).modificar(reserva);
+  }
+
+  @Test
+  public void noDeberiaLiberarCupoSiElSocioSaleDeLaListaDeEspera() {
+    clase.setCupo(0);
+    Reserva reserva = new Reserva();
+    reserva.setId(7L);
+    reserva.setSocio(socio);
+    reserva.setClase(clase);
+    reserva.setEstado(EstadoReserva.EN_ESPERA);
+    when(repoReservaMock.buscarPorId(7L)).thenReturn(reserva);
+
+    servicio.cancelar(1L, 7L);
+
+    assertThat(reserva.getEstado(), equalTo(EstadoReserva.CANCELADA));
+    assertThat(clase.getCupo(), equalTo(0));
+    verify(repoClaseMock, never()).modificar(clase);
   }
 
   @Test
@@ -114,6 +165,7 @@ public class ServicioReservaTest {
 
   @Test
   public void deberiaCancelarUnaReservaDelSocio() {
+    clase.setCupo(10);
     Reserva reserva = dadoQueExisteUnaReservaDe(socio, 7L);
 
     servicio.cancelar(1L, 7L);
@@ -155,7 +207,7 @@ public class ServicioReservaTest {
   @Test
   public void deberiaRestarUnoAlCupoDeLaClaseAlReservar() throws Exception {
     clase.setCupo(5);
-    when(repoReservaMock.existeConfirmada(1L, 5L)).thenReturn(false);
+    when(repoReservaMock.existeActiva(1L, 5L)).thenReturn(false);
     when(repoReservaMock.contarConfirmadas(5L)).thenReturn(0);
 
     servicio.reservar(1L, 5L);
@@ -165,7 +217,7 @@ public class ServicioReservaTest {
   }
 
   @Test
-  public void deberiaSumarUnoAlCupoDeLaClaseSiCanceloLaClase() throws Exception {
+  public void deberiaSumarUnoAlCupoSiSeCancelaYNoHayNadieEnEspera() throws Exception {
     clase.setCupo(4);
 
     Reserva reserva = new Reserva();
@@ -185,11 +237,46 @@ public class ServicioReservaTest {
     Reserva reserva = new Reserva();
     reserva.setId(reservaId);
     reserva.setSocio(duenio);
-    Clase clase = new Clase();
-    clase.setCupo(10);
     reserva.setClase(clase);
     reserva.setEstado(EstadoReserva.CONFIRMADA);
     when(repoReservaMock.buscarPorId(reservaId)).thenReturn(reserva);
+    return reserva;
+  }
+
+  @Test
+  public void deberiaAsignarElLugarLiberadoAlPrimeroDeLaListaDeEspera() {
+    clase.setCupo(0);
+    Reserva reservaQueSeCancela = dadoQueExisteUnaReservaDe(socio, 7L);
+    Reserva primeraEnEspera = dadoQueHayUnaReservaEnEsperaDeOtroSocio();
+    when(repoReservaMock.buscarPrimeraEnEspera(5L)).thenReturn(primeraEnEspera);
+
+    servicio.cancelar(1L, 7L);
+
+    assertThat(reservaQueSeCancela.getEstado(), equalTo(EstadoReserva.CANCELADA));
+    assertThat(primeraEnEspera.getEstado(), equalTo(EstadoReserva.CONFIRMADA));
+    verify(repoReservaMock, times(1)).modificar(primeraEnEspera);
+    assertThat(clase.getCupo(), equalTo(0));
+    verify(repoClaseMock, never()).modificar(clase);
+  }
+
+  @Test
+  public void noDeberiaAsignarElLugarANadieSiQuienCancelaEstabaEnListaDeEspera() {
+    Reserva reserva = dadoQueExisteUnaReservaDe(socio, 7L);
+    reserva.setEstado(EstadoReserva.EN_ESPERA);
+
+    servicio.cancelar(1L, 7L);
+
+    verify(repoReservaMock, never()).buscarPrimeraEnEspera(anyLong());
+  }
+
+  private Reserva dadoQueHayUnaReservaEnEsperaDeOtroSocio() {
+    Usuario otroSocio = new Usuario();
+    otroSocio.setId(2L);
+    Reserva reserva = new Reserva();
+    reserva.setId(8L);
+    reserva.setSocio(otroSocio);
+    reserva.setClase(clase);
+    reserva.setEstado(EstadoReserva.EN_ESPERA);
     return reserva;
   }
 }

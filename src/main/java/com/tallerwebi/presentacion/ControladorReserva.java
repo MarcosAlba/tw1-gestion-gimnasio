@@ -1,7 +1,6 @@
 package com.tallerwebi.presentacion;
 
 import com.tallerwebi.dominio.excepcion.ClaseNoEncontrada;
-import com.tallerwebi.dominio.excepcion.ClaseSinCupo;
 import com.tallerwebi.dominio.excepcion.MembresiaNoVigente;
 import com.tallerwebi.dominio.excepcion.ReservaDuplicada;
 import com.tallerwebi.dominio.excepcion.ReservaNoEncontrada;
@@ -50,9 +49,7 @@ public class ControladorReserva {
     } catch (MembresiaNoVigente e) {
       return vistaReservas(socioId, "No tenés una membresía vigente");
     } catch (ReservaDuplicada e) {
-      return vistaReservas(socioId, "Ya reservaste esta clase");
-    } catch (ClaseSinCupo e) {
-      return vistaReservas(socioId, "La clase no tiene cupos disponibles");
+      return vistaReservas(socioId, "Ya tenés un lugar o estás en lista de espera para esta clase");
     } catch (ClaseNoEncontrada e) {
       return vistaReservas(socioId, "La clase no existe");
     }

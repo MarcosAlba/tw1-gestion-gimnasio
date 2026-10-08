@@ -11,7 +11,7 @@
     <header class="pagina-cabecera">
       <div>
         <h1>Mis reservas</h1>
-        <p>Cancelá una reserva para liberar tu lugar en la clase.</p>
+        <p>Cancelá una reserva para liberar tu lugar, o para salir de la lista de espera.</p>
       </div>
       <a th:href="@{/clases}" class="btn btn-primary">Ver clases</a>
     </header>
@@ -35,11 +35,16 @@
             <td th:text="${#temporals.format(r.clase.inicio, 'dd/MM/yyyy HH:mm')}">01/01/2026 18:00</td>
             <td class="d-none d-md-table-cell" th:text="${r.clase.lugar}">Sala 1</td>
             <td>
-              <span class="estado" th:classappend="${r.estado.name() == 'CANCELADA'} ? 'estado-cancelada'"
-                th:text="${r.estado.name() == 'CONFIRMADA'} ? 'Confirmada' : 'Cancelada'">Confirmada</span>
+              <span class="estado"
+                th:classappend="${r.estado.name() == 'CANCELADA'} ? 'estado-cancelada' : (${r.estado.name() == 'EN_ESPERA'} ? 'estado-espera' : '')"
+                th:switch="${r.estado.name()}">
+                <th:block th:case="'CONFIRMADA'">Confirmada</th:block>
+                <th:block th:case="'EN_ESPERA'">En lista de espera</th:block>
+                <th:block th:case="*">Cancelada</th:block>
+              </span>
             </td>
             <td class="accion">
-              <form th:if="${r.estado.name() == 'CONFIRMADA'}" th:action="@{/reservas/cancelar}" method="POST">
+              <form th:if="${r.estado.name() != 'CANCELADA'}" th:action="@{/reservas/cancelar}" method="POST">
                 <input type="hidden" name="reservaId" th:value="${r.id}" />
                 <button class="btn btn-sm btn-outline-danger" type="submit">Cancelar</button>
               </form>
