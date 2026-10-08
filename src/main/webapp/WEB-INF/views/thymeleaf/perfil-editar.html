@@ -1,0 +1,121 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!--
+  Editar perfil (socio o entrenador). Todos los campos son opcionales.
+  Se llega desde /perfil con el boton "Editar perfil".
+  Modelo que espera del controlador:
+    usuario      Usuario con la sesion iniciada. Solo lectura: nombre, apellido, email, rol, fotoPerfil
+    datosPerfil  DatosPerfil con lo editable: nombre, apellido, edad, deporte y foto (MultipartFile)
+    error        mensaje de error, o null
+  El formulario se envia por POST a /perfil/guardar como multipart/form-data.
+  Al guardar bien se redirige a /perfil (la pantalla de lectura).
+-->
+
+<head th:replace="~{fragmentos :: cabecera('Editar perfil')}"></head>
+
+<body>
+
+  <nav th:replace="~{fragmentos :: barra('perfil')}"></nav>
+
+  <main role="main" class="pagina perfil">
+
+    <header class="pagina-cabecera">
+      <div>
+        <h1>Editar perfil</h1>
+        <p>Contá un poco sobre vos. Todos los datos son opcionales y podés cambiarlos cuando quieras.</p>
+      </div>
+    </header>
+
+    <p th:if="${error != null}" class="alert alert-danger" th:text="${error}">No se pudo guardar.</p>
+
+    <form class="perfil-grilla" th:action="@{/perfil/guardar}" th:object="${datosPerfil}" method="POST"
+          enctype="multipart/form-data">
+
+      <!-- Tarjeta lateral: foto y datos de la cuenta -->
+      <aside class="perfil-tarjeta">
+        <div class="avatar" id="avatar">
+          <img id="avatar-imagen" th:if="${usuario.fotoPerfil != null and !#strings.isEmpty(usuario.fotoPerfil)}"
+               th:src="${usuario.fotoPerfil}" alt="Tu foto de perfil">
+          <span id="avatar-iniciales"
+                th:unless="${usuario.fotoPerfil != null and !#strings.isEmpty(usuario.fotoPerfil)}"
+                th:text="${usuario.nombre != null and !#strings.isEmpty(usuario.nombre)} ? ${#strings.toUpperCase(#strings.substring(usuario.nombre, 0, 1))} : '?'">?</span>
+        </div>
+
+        <h2 class="perfil-nombre"
+            th:text="${#strings.isEmpty(#strings.trim(#strings.defaultString(usuario.nombre, '') + ' ' + #strings.defaultString(usuario.apellido, '')))} ? 'Sin nombre' : ${#strings.trim(#strings.defaultString(usuario.nombre, '') + ' ' + #strings.defaultString(usuario.apellido, ''))}">Juan Perez</h2>
+        <p class="perfil-rol"
+           th:text="${usuario.rol == 'ENTRENADOR'} ? 'Entrenador' : 'Socio'">Socio</p>
+        <p class="perfil-email" th:text="${usuario.email}">socio@unlam.edu.ar</p>
+
+        <label class="btn btn-outline-dark perfil-subir" for="foto">Elegir foto</label>
+        <input id="foto" name="foto" type="file" class="perfil-archivo"
+               accept="image/jpeg,image/png,image/webp" data-max-bytes="2097152" data-max-original-bytes="10485760">
+        <p class="campo-ayuda" id="foto-ayuda">JPG, PNG o WebP. Antes de guardarla vas a poder ajustarla.</p>
+        <p class="campo-error" id="foto-error" role="alert" hidden></p>
+      </aside>
+
+      <!-- Datos editables -->
+      <section class="perfil-datos">
+        <div class="campo-doble">
+          <div>
+            <label class="campo-etiqueta" for="nombre">Nombre</label>
+            <input th:field="*{nombre}" id="nombre" class="form-control" maxlength="60" autocomplete="given-name">
+          </div>
+          <div>
+            <label class="campo-etiqueta" for="apellido">Apellido</label>
+            <input th:field="*{apellido}" id="apellido" class="form-control" maxlength="60" autocomplete="family-name">
+          </div>
+        </div>
+
+        <div class="campo-doble">
+          <div>
+            <label class="campo-etiqueta" for="edad">Edad</label>
+            <input th:field="*{edad}" id="edad" type="number" class="form-control" min="1" max="120" inputmode="numeric">
+          </div>
+          <!-- El deporte solo aplica a los socios y es lo que usa la rutina -->
+          <div th:if="${usuario.rol == 'SOCIO'}">
+            <label class="campo-etiqueta" for="deporte">Deporte que practicás</label>
+            <select th:field="*{deporte}" id="deporte" class="form-select">
+              <option value="">Ninguno por ahora</option>
+              <option th:each="d : ${T(com.tallerwebi.dominio.enums.Deporte).values()}" th:value="${d}"
+                th:text="${d.name() == 'FUTBOL'} ? 'Fútbol' : (${d.name() == 'PADEL'} ? 'Pádel' : (${d.name() == 'BASQUET'} ? 'Básquet' : ${#strings.capitalize(#strings.toLowerCase(d))}))"></option>
+            </select>
+            <p class="campo-ayuda">Con tu deporte armamos una rutina a tu medida.</p>
+          </div>
+        </div>
+
+        <div class="perfil-acciones">
+          <button id="btn-guardar-perfil" type="submit" class="btn btn-lg btn-primary">Guardar cambios</button>
+          <a class="portada-enlace perfil-cancelar" th:href="@{/perfil}">Cancelar</a>
+        </div>
+      </section>
+
+    </form>
+  </main>
+
+  <!-- Editor de la foto: se abre al elegir una imagen. Se mueve arrastrando y se agranda con el control -->
+  <dialog id="editor-foto" class="editor-foto" aria-labelledby="editor-titulo">
+    <h2 id="editor-titulo">Ajustá tu foto</h2>
+    <div class="editor-lienzo">
+      <canvas id="editor-canvas" width="320" height="320" tabindex="0"
+              aria-label="Arrastrá la imagen para encuadrarla. Con las flechas también podés moverla."></canvas>
+    </div>
+    <div class="editor-zoom">
+      <label for="editor-zoom" class="editor-zoom-etiqueta">Zoom</label>
+      <input id="editor-zoom" type="range" min="1" max="4" step="0.01" value="1">
+    </div>
+    <p class="campo-ayuda editor-ayuda">Arrastrá para mover la imagen.</p>
+    <div class="editor-acciones">
+      <button type="button" id="editor-reiniciar" class="editor-reiniciar">Reiniciar</button>
+      <button type="button" id="editor-cancelar" class="btn btn-outline-dark">Cancelar</button>
+      <button type="button" id="editor-aplicar" class="btn btn-primary">Aplicar</button>
+    </div>
+  </dialog>
+
+  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
+
+  <script type="module" th:src="@{/js/perfil.js}"></script>
+</body>
+
+</html>

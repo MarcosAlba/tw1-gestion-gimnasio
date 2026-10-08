@@ -2,8 +2,11 @@ package com.tallerwebi.integracion;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -163,6 +167,20 @@ public class VistasTest {
   @Test
   @Transactional
   @Rollback
+  public void deberiaMostrarLasReservasEnListaDeEspera() throws Exception {
+    dadoQueExistenDatosDeEjemplo();
+    Clase yoga = clase("Yoga", CapacidadFisica.COORDINACION, 3);
+    sessionFactory.getCurrentSession().persist(yoga);
+    sessionFactory.getCurrentSession().persist(reserva(yoga, EstadoReserva.EN_ESPERA));
+
+    String html = pagina(comoSocio(get("/reservas")));
+
+    assertThat(html, containsString("En lista de espera"));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
   public void deberiaMostrarLaMembresiaVigenteYElHistorial() throws Exception {
     dadoQueExistenDatosDeEjemplo();
 
@@ -171,6 +189,23 @@ public class VistasTest {
     assertThat(html, containsString("Vigente. Vence el"));
     assertThat(html, containsString("Trimestral"));
     assertThat(html, containsString("Anual (12 meses)"));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaMostrarMensajeDeSinMembresiasSiElSocioEsNuevo() throws Exception {
+    Session sesion = sessionFactory.getCurrentSession();
+    Usuario socioNuevo = usuario("nuevo@test.com", "SOCIO", null);
+    sesion.persist(socioNuevo);
+
+    MockHttpServletRequestBuilder pedido = get("/membresias")
+      .sessionAttr("ROL", "SOCIO")
+      .sessionAttr("ID_USUARIO", socioNuevo.getId());
+    String html = pagina(pedido);
+
+    assertThat(html, containsString("Sin membresía vigente"));
+    assertThat(html, containsString("Todavía no tenés membresías"));
   }
 
   @Test
@@ -215,6 +250,153 @@ public class VistasTest {
   @Test
   public void noDeberiaMostrarLasClasesSinUnaSesionIniciada() throws Exception {
     mockMvc.perform(get("/clases")).andExpect(redirectedUrl("/login"));
+  }
+
+  // ---------- Perfil ----------
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaMostrarElPerfilDelSocioConSuDeporte() throws Exception {
+    dadoQueExistenDatosDeEjemplo();
+
+    String html = pagina(comoSocio(get("/perfil")));
+
+    assertThat(html, containsString("socio@test.com"));
+    assertThat(html, containsString("id=\"btn-editar-perfil\""));
+    assertThat(html, containsString("Tu deporte"));
+    assertThat(html, containsString("Tenis"));
+    assertThat(html, containsString("intensidad-agilidad"));
+    assertThat(html, containsString("Sin completar"));
+    assertThat(html, containsString("Ver mi rutina"));
+    assertThat(html, not(containsString("Ver mis clases")));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaMostrarElPerfilDelEntrenadorSinDeporte() throws Exception {
+    dadoQueExistenDatosDeEjemplo();
+
+    String html = pagina(comoEntrenador(get("/perfil")));
+
+    assertThat(html, containsString("entrenador@test.com"));
+    assertThat(html, containsString("Ver mis clases"));
+    assertThat(html, not(containsString("Tu deporte")));
+    assertThat(html, not(containsString("Ver mi rutina")));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaMostrarElFormularioDeEdicionDelSocio() throws Exception {
+    dadoQueExistenDatosDeEjemplo();
+
+    String html = pagina(comoSocio(get("/perfil/editar")));
+
+    assertThat(html, containsString("id=\"btn-guardar-perfil\""));
+    assertThat(html, containsString("enctype=\"multipart/form-data\""));
+    assertThat(html, containsString("id=\"editor-foto\""));
+    assertThat(html, containsString("Deporte que practicás"));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void noDeberiaPedirElDeporteAlEntrenadorAlEditar() throws Exception {
+    dadoQueExistenDatosDeEjemplo();
+
+    String html = pagina(comoEntrenador(get("/perfil/editar")));
+
+    assertThat(html, containsString("id=\"btn-guardar-perfil\""));
+    assertThat(html, not(containsString("Deporte que practicás")));
+  }
+
+  @Test
+  public void noDeberiaMostrarElPerfilSinUnaSesionIniciada() throws Exception {
+    mockMvc.perform(get("/perfil")).andExpect(redirectedUrl("/login"));
+    mockMvc.perform(get("/perfil/editar")).andExpect(redirectedUrl("/login"));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaGuardarElPerfilConSuFotoYVolverAlPerfil() throws Exception {
+    dadoQueExistenDatosDeEjemplo();
+    MockMultipartFile foto = new MockMultipartFile(
+      "foto",
+      "perfil.png",
+      "image/png",
+      new byte[] { 1, 2, 3 }
+    );
+
+    mockMvc
+      .perform(
+        comoSocio(
+          multipart("/perfil/guardar")
+            .file(foto)
+            .param("nombre", "Ana")
+            .param("apellido", "Lopez")
+            .param("edad", "25")
+            .param("deporte", "BOXEO")
+        )
+      )
+      .andExpect(redirectedUrl("/perfil"));
+
+    Usuario guardado = sessionFactory.getCurrentSession().get(Usuario.class, socio.getId());
+    assertThat(guardado.getNombre(), equalTo("Ana"));
+    assertThat(guardado.getApellido(), equalTo("Lopez"));
+    assertThat(guardado.getEdad(), equalTo(25));
+    assertThat(guardado.getDeporte(), equalTo(Deporte.BOXEO));
+    assertThat(guardado.getFotoPerfil(), equalTo("data:image/png;base64,AQID"));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void noDeberiaPermitirQueElEntrenadorCambieSuDeporte() throws Exception {
+    dadoQueExistenDatosDeEjemplo();
+
+    mockMvc
+      .perform(
+        comoEntrenador(
+          multipart("/perfil/guardar").param("nombre", "Laura").param("deporte", "BOXEO")
+        )
+      )
+      .andExpect(redirectedUrl("/perfil"));
+
+    Usuario guardado = sessionFactory.getCurrentSession().get(Usuario.class, entrenador.getId());
+    assertThat(guardado.getNombre(), equalTo("Laura"));
+    assertThat(guardado.getDeporte(), nullValue());
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaMostrarElErrorCuandoLaFotoNoEsDeUnTipoPermitido() throws Exception {
+    dadoQueExistenDatosDeEjemplo();
+    MockMultipartFile gif = new MockMultipartFile(
+      "foto",
+      "perfil.gif",
+      "image/gif",
+      new byte[] { 1, 2, 3 }
+    );
+
+    String html = pagina(comoSocio(multipart("/perfil/guardar").file(gif).param("nombre", "Ana")));
+
+    assertThat(html, containsString("La foto tiene que ser JPG, PNG o WebP."));
+    assertThat(html, containsString("id=\"btn-guardar-perfil\""));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaMostrarElErrorCuandoLaEdadEstaFueraDeRango() throws Exception {
+    dadoQueExistenDatosDeEjemplo();
+
+    String html = pagina(comoSocio(multipart("/perfil/guardar").param("edad", "200")));
+
+    assertThat(html, containsString("La edad tiene que estar entre 1 y 120."));
   }
 
   private String pagina(MockHttpServletRequestBuilder pedido) throws Exception {

@@ -11,7 +11,7 @@
     <header class="pagina-cabecera">
       <div>
         <h1>Próximas clases</h1>
-        <p th:if="${session.ROL == 'SOCIO'}">Elegí una clase y reservá tu lugar. Necesitás una membresía vigente.</p>
+        <p th:if="${session.ROL == 'SOCIO'}">Elegí una clase y reservá tu lugar. Necesitás una membresía vigente. Si la clase está completa, quedás en lista de espera.</p>
         <p th:if="${session.ROL != 'SOCIO'}">Clases programadas, ordenadas por horario de inicio.</p>
       </div>
       <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}" class="btn btn-primary">Nueva clase</a>

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 
 import com.tallerwebi.dominio.Reserva;
 import com.tallerwebi.dominio.excepcion.ClaseNoEncontrada;
-import com.tallerwebi.dominio.excepcion.ClaseSinCupo;
 import com.tallerwebi.dominio.excepcion.MembresiaNoVigente;
 import com.tallerwebi.dominio.excepcion.ReservaDuplicada;
 import com.tallerwebi.dominio.excepcion.ReservaNoEncontrada;
@@ -87,20 +86,9 @@ public class ControladorReservaTest {
     ModelAndView modelAndView = controlador.reservar(5L, requestMock);
 
     assertThat(modelAndView.getViewName(), equalTo("reservas"));
-    assertThat(modelAndView.getModel().get("error"), equalTo("Ya reservaste esta clase"));
-  }
-
-  @Test
-  public void deberiaMostrarUnErrorSiLaClaseNoTieneCupo() throws Exception {
-    dadoQueSoy("SOCIO", 1L);
-    doThrow(new ClaseSinCupo()).when(servicioMock).reservar(1L, 5L);
-
-    ModelAndView modelAndView = controlador.reservar(5L, requestMock);
-
-    assertThat(modelAndView.getViewName(), equalTo("reservas"));
     assertThat(
       modelAndView.getModel().get("error"),
-      equalTo("La clase no tiene cupos disponibles")
+      equalTo("Ya tenés un lugar o estás en lista de espera para esta clase")
     );
   }
 

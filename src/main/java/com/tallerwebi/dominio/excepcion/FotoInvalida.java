@@ -1,6 +1,6 @@
 package com.tallerwebi.dominio.excepcion;
 
-public class ClaseSinCupo extends Exception {
+public class FotoInvalida extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
 }

@@ -33,7 +33,7 @@
     El texto de la marca tiene que seguir siendo "UNLAM": lo usa el test de punta a punta.
   -->
   <nav th:fragment="barra(activo)" class="barra" aria-label="Principal">
-    <a class="navbar-brand" th:href="${session.ROL != null} ? @{/home} : @{/login}">UNLAM</a>
+    <a class="navbar-brand" th:href="${session.ROL != null} ? @{/home} : @{/}">UNLAM</a>
     <span class="barra-sub">Gimnasio</span>
 
     <ul class="barra-enlaces" th:if="${session.ROL != null}">
@@ -56,10 +56,26 @@
             <a th:href="@{/catalogo}" th:aria-current="${activo == 'catalogo'} ? 'page'">Lista de Ejercicios</a>
         </li>
       <li>
+        <a th:href="@{/perfil}" th:aria-current="${activo == 'perfil'} ? 'page'">Mi perfil</a>
+      </li>
+      <li>
         <span class="barra-rol"
           th:text="${session.ROL == 'SOCIO'} ? 'Socio' : (${session.ROL == 'ENTRENADOR'} ? 'Entrenador' : 'Administración')">Socio</span>
       </li>
 
+    </ul>
+
+    <!-- Sin sesion: horarios publicos y accesos para entrar o registrarse -->
+    <ul class="barra-enlaces" th:if="${session.ROL == null}">
+      <li>
+        <a th:href="@{/horarios}" th:aria-current="${activo == 'horarios'} ? 'page'">Horarios</a>
+      </li>
+      <li>
+        <a id="barra-crear-cuenta" th:href="@{/nuevo-usuario}" th:aria-current="${activo == 'nuevo-usuario'} ? 'page'">Crear cuenta</a>
+      </li>
+      <li th:if="${activo != 'login'}">
+        <a id="barra-ingresar" class="barra-ingresar" th:href="@{/login}">Ingresar</a>
+      </li>
     </ul>
   </nav>
 

@@ -98,5 +98,9 @@ public class ServicioMembresiaTest {
     Long dias = servicio.obtenerDiasRestantes(1L);
 
     assertNull(dias);
+  public void deberiaDevolverHistorialVacioSiElSocioNoTieneMembresias() {
+    when(repoMembresiaMock.buscarPorSocio(1L)).thenReturn(List.of());
+    List<Membresia> resultado = servicio.historial(1L);
+    assertThat(resultado, equalTo(List.of()));
   }
 }

@@ -2,7 +2,6 @@ package com.tallerwebi.dominio;
 
 import com.tallerwebi.dominio.enums.EstadoReserva;
 import com.tallerwebi.dominio.excepcion.ClaseNoEncontrada;
-import com.tallerwebi.dominio.excepcion.ClaseSinCupo;
 import com.tallerwebi.dominio.excepcion.MembresiaNoVigente;
 import com.tallerwebi.dominio.excepcion.ReservaDuplicada;
 import com.tallerwebi.dominio.excepcion.ReservaNoEncontrada;
@@ -42,8 +41,7 @@ public class ServicioReservaImpl implements ServicioReserva {
   }
 
   @Override
-  public void reservar(Long socioId, Long claseId)
-    throws MembresiaNoVigente, ClaseSinCupo, ReservaDuplicada {
+  public void reservar(Long socioId, Long claseId) throws MembresiaNoVigente, ReservaDuplicada {
     Usuario socio = buscarSocio(socioId);
     Clase clase = buscarClase(claseId);
     validarQueSePuedeReservar(socioId, clase);
@@ -51,8 +49,14 @@ public class ServicioReservaImpl implements ServicioReserva {
     Reserva reserva = new Reserva();
     reserva.setSocio(socio);
     reserva.setClase(clase);
-    reserva.setEstado(EstadoReserva.CONFIRMADA);
     reserva.setFechaReserva(LocalDateTime.now());
+    if (clase.getCupo() > 0) {
+      reserva.setEstado(EstadoReserva.CONFIRMADA);
+      clase.setCupo(clase.getCupo() - 1);
+      repoClase.modificar(clase);
+    } else {
+      reserva.setEstado(EstadoReserva.EN_ESPERA);
+    }
     repoReserva.guardar(reserva);
   }
 
@@ -73,15 +77,12 @@ public class ServicioReservaImpl implements ServicioReserva {
   }
 
   private void validarQueSePuedeReservar(Long socioId, Clase clase)
-    throws MembresiaNoVigente, ClaseSinCupo, ReservaDuplicada {
+    throws MembresiaNoVigente, ReservaDuplicada {
     if (repoMembresia.buscarVigente(socioId, LocalDate.now()) == null) {
       throw new MembresiaNoVigente();
     }
-    if (repoReserva.existeConfirmada(socioId, clase.getId())) {
+    if (repoReserva.existeActiva(socioId, clase.getId())) {
       throw new ReservaDuplicada();
-    }
-    if (repoReserva.contarConfirmadas(clase.getId()) >= clase.getCupo()) {
-      throw new ClaseSinCupo();
     }
   }
 
@@ -91,8 +92,24 @@ public class ServicioReservaImpl implements ServicioReserva {
     if (reserva == null || !reserva.getSocio().getId().equals(socioId)) {
       throw new ReservaNoEncontrada();
     }
+    boolean ocupabaLugar = reserva.getEstado() == EstadoReserva.CONFIRMADA;
     reserva.setEstado(EstadoReserva.CANCELADA);
     repoReserva.modificar(reserva);
+
+    if (ocupabaLugar) {
+      liberarLugar(reserva.getClase());
+    }
+  }
+
+  private void liberarLugar(Clase clase) {
+    Reserva primeraEnEspera = repoReserva.buscarPrimeraEnEspera(clase.getId());
+    if (primeraEnEspera != null) {
+      primeraEnEspera.setEstado(EstadoReserva.CONFIRMADA);
+      repoReserva.modificar(primeraEnEspera);
+    } else {
+      clase.setCupo(clase.getCupo() + 1);
+      repoClase.modificar(clase);
+    }
   }
 
   @Override

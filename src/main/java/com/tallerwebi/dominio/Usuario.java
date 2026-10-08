@@ -1,12 +1,7 @@
 package com.tallerwebi.dominio;
 
 import com.tallerwebi.dominio.enums.Deporte;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Usuario {
@@ -20,6 +15,11 @@ public class Usuario {
   private String email;
   private String password;
   private String rol;
+  private Integer edad;
+
+  @Lob
+  private String fotoPerfil;
+
   private Boolean activo = false;
 
   @Enumerated(EnumType.STRING)
@@ -91,5 +91,21 @@ public class Usuario {
 
   public void activar() {
     activo = true;
+  }
+
+  public Integer getEdad() {
+    return edad;
+  }
+
+  public void setEdad(Integer edad) {
+    this.edad = edad;
+  }
+
+  public String getFotoPerfil() {
+    return fotoPerfil;
+  }
+
+  public void setFotoPerfil(String fotoPerfil) {
+    this.fotoPerfil = fotoPerfil;
   }
 }

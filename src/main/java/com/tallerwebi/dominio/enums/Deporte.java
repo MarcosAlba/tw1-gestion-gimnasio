@@ -21,6 +21,23 @@ public enum Deporte {
     this.fuerza = fuerza;
   }
 
+  // Getters para que las vistas lean la intensidad de cada capacidad (usuario.deporte.agilidad)
+  public int getAgilidad() {
+    return agilidad;
+  }
+
+  public int getCardio() {
+    return cardio;
+  }
+
+  public int getCoordinacion() {
+    return coordinacion;
+  }
+
+  public int getFuerza() {
+    return fuerza;
+  }
+
   public int cantidadPara(CapacidadFisica capacidad) {
     return switch (capacidad) {
       case AGILIDAD -> agilidad;

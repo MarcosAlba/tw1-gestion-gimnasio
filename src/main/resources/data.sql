@@ -52,7 +52,7 @@ INSERT INTO Clase(id, nombre, inicio, duracion, lugar, cupo, capacidad, entrenad
 INSERT INTO Reserva(id, socio_id, clase_id, estado, fechaReserva) VALUES(null, 4, 1, 'CONFIRMADA', DATE_SUB(NOW(), INTERVAL 1 DAY));
 -- Socio 4 cancelo la clase 2 -> puede volver a reservarla (la cancelada no cuenta)
 INSERT INTO Reserva(id, socio_id, clase_id, estado, fechaReserva) VALUES(null, 4, 2, 'CANCELADA', DATE_SUB(NOW(), INTERVAL 1 DAY));
--- Socio 6 ocupa el unico lugar de la clase 3 -> cualquier otro = ClaseSinCupo
+-- Socio 6 ocupa el unico lugar de la clase 3 -> cualquier otro socio queda EN LISTA DE ESPERA
 INSERT INTO Reserva(id, socio_id, clase_id, estado, fechaReserva) VALUES(null, 6, 3, 'CONFIRMADA', DATE_SUB(NOW(), INTERVAL 1 DAY));
 -- Socio 6 en una clase pasada (historial)
 INSERT INTO Reserva(id, socio_id, clase_id, estado, fechaReserva) VALUES(null, 6, 5, 'CONFIRMADA', DATE_SUB(NOW(), INTERVAL 3 DAY));
