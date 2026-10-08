@@ -120,6 +120,8 @@ public class ServicioReservaTest {
 
     assertThat(reserva.getEstado(), equalTo(EstadoReserva.CANCELADA));
     verify(repoReservaMock, times(1)).modificar(reserva);
+    assertThat(reserva.getClase().getCupo(), equalTo(11));
+    verify(repoClaseMock, times(1)).modificar(reserva.getClase());
   }
 
   @Test
@@ -183,6 +185,9 @@ public class ServicioReservaTest {
     Reserva reserva = new Reserva();
     reserva.setId(reservaId);
     reserva.setSocio(duenio);
+    Clase clase = new Clase();
+    clase.setCupo(10);
+    reserva.setClase(clase);
     reserva.setEstado(EstadoReserva.CONFIRMADA);
     when(repoReservaMock.buscarPorId(reservaId)).thenReturn(reserva);
     return reserva;
