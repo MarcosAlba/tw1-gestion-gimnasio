@@ -7,6 +7,7 @@ import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
 import com.tallerwebi.dominio.interfaces.ServicioMembresia;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,5 +42,14 @@ public class ServicioMembresiaImpl implements ServicioMembresia {
   @Override
   public Membresia obtenerVigente(Long socioId) {
     return repoMembresia.buscarVigente(socioId, LocalDate.now());
+  }
+
+  @Override
+  public Long obtenerDiasRestantes(Long socioId) {
+    Membresia vigente = this.obtenerVigente(socioId);
+    if (vigente == null) {
+      return null;
+    }
+    return ChronoUnit.DAYS.between(LocalDate.now(), vigente.getFechaVencimiento());
   }
 }

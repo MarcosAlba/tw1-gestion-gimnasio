@@ -1,8 +1,7 @@
 package com.tallerwebi.presentacion;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.mockito.Mockito.*;
 
@@ -10,6 +9,7 @@ import com.tallerwebi.dominio.Usuario;
 import com.tallerwebi.dominio.excepcion.RolInvalido;
 import com.tallerwebi.dominio.excepcion.UsuarioExistente;
 import com.tallerwebi.dominio.interfaces.ServicioLogin;
+import com.tallerwebi.dominio.interfaces.ServicioMembresia;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +24,7 @@ public class ControladorLoginTest {
   private HttpServletRequest requestMock;
   private HttpSession sessionMock;
   private ServicioLogin servicioLoginMock;
+  private ServicioMembresia servicioMembresiaMock;
 
   @BeforeEach
   public void init() {
@@ -33,7 +34,8 @@ public class ControladorLoginTest {
     requestMock = mock(HttpServletRequest.class);
     sessionMock = mock(HttpSession.class);
     servicioLoginMock = mock(ServicioLogin.class);
-    controladorLogin = new ControladorLogin(servicioLoginMock);
+    servicioMembresiaMock = mock(ServicioMembresia.class);
+    controladorLogin = new ControladorLogin(servicioLoginMock, servicioMembresiaMock);
   }
 
   @Test
@@ -189,5 +191,19 @@ public class ControladorLoginTest {
 
     // validacion
     assertThat(modelAndView.getViewName(), equalToIgnoringCase("redirect:/login"));
+  }
+
+  @Test
+  public void loginDeSocioConMembresiaPorVencerDeberiaGuardarAvisoEnSesion() {
+    Usuario socioMock = mock(Usuario.class);
+    when(socioMock.getRol()).thenReturn("SOCIO");
+    when(socioMock.getId()).thenReturn(1L);
+    when(requestMock.getSession()).thenReturn(sessionMock);
+    when(servicioLoginMock.consultarUsuario(anyString(), anyString())).thenReturn(socioMock);
+    when(servicioMembresiaMock.obtenerDiasRestantes(1L)).thenReturn(3L);
+
+    controladorLogin.validarLogin(datosLoginMock, requestMock);
+
+    verify(sessionMock, times(1)).setAttribute(eq("AVISO_MEMBRESIA"), containsString("3 días"));
   }
 }

@@ -14,6 +14,9 @@ INSERT INTO Usuario(id, email, password, rol, activo, nombre, apellido, deporte)
 INSERT INTO Usuario(id, email, password, rol, activo, nombre, apellido, deporte) VALUES(null, 'sindeporte@unlam.edu.ar', 'test', 'SOCIO', true, 'Pedro', 'Ruiz', null);
 -- 7: socio SIN MEMBRESIA -> no puede reservar
 INSERT INTO Usuario(id, email, password, rol, activo, nombre, apellido, deporte) VALUES(null, 'nuevo@unlam.edu.ar', 'test', 'SOCIO', true, 'Sofia', 'Castro', 'TENIS');
+-- 8: socio con membresia POR VENCER (le faltan 5 dias) -> activa la alerta en home
+INSERT INTO Usuario(id, email, password, rol, activo, nombre, apellido, deporte)
+VALUES(null, 'porvencer@unlam.edu.ar', 'test', 'SOCIO', true, 'Carlos', 'Benitez', 'FUTBOL');
 
 -- =====================================================================
 -- MEMBRESIAS
@@ -25,7 +28,9 @@ INSERT INTO Membresia(id, socio_id, tipo, fechaInicio, fechaVencimiento) VALUES(
 INSERT INTO Membresia(id, socio_id, tipo, fechaInicio, fechaVencimiento) VALUES(null, 5, 'MENSUAL', DATE_SUB(CURDATE(), INTERVAL 2 MONTH), DATE_SUB(CURDATE(), INTERVAL 1 MONTH));
 -- Socio 6: vigente anual
 INSERT INTO Membresia(id, socio_id, tipo, fechaInicio, fechaVencimiento) VALUES(null, 6, 'ANUAL', DATE_SUB(CURDATE(), INTERVAL 1 MONTH), DATE_ADD(CURDATE(), INTERVAL 11 MONTH));
-
+-- Socio 8: vigente pero le quedan exactamente 5 dias para vencer
+INSERT INTO Membresia(id, socio_id, tipo, fechaInicio, fechaVencimiento)
+VALUES(null, 8, 'MENSUAL', DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 5 DAY), INTERVAL 1 MONTH), DATE_ADD(CURDATE(), INTERVAL 5 DAY));
 -- =====================================================================
 -- CLASES
 -- =====================================================================

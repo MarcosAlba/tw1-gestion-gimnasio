@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: cabecera(${ejercicio.name != null ? ejercicio.name.es : 'Detalle de Ejercicio'})}"></head>
+<body>
+<nav th:replace="~{fragmentos :: barra('catalogo')}"></nav>
+
+<main role="main" class="pagina" style="max-width: 68rem;">
+    <!-- CABECERA CON TÍTULO Y BOTÓN DE RETORNO -->
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <div>
+            <h1 class="mb-0" th:text="${ejercicio.name != null ? ejercicio.name.es : 'Ejercicio'}">Press de pecho</h1>
+            <h5 class="text-muted fst-italic mt-1" th:if="${ejercicio.name != null and ejercicio.name.en != null}" th:text="${ejercicio.name.en}">Chest press</h5>
+        </div>
+        <a th:href="@{/catalogo}" class="btn btn-outline-dark">Volver</a>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- COLUMNA IZQUIERDA: IMÁGENES Y MAPA MUSCULAR -->
+        <div class="col-lg-6">
+            <!-- PESTAÑAS O COMPARATIVA DE IMÁGENES HOMBRE / MUJER -->
+            <div class="card border mb-3">
+                <div class="card-header bg-white">
+                    <ul class="nav nav-pills card-header-pills" id="fotosTab" role="tablist">
+                        <li class="nav-item" role="presentation" th:if="${ejercicio.images != null and ejercicio.images.male != null}">
+                            <button class="nav-link active btn-sm" id="male-tab" data-bs-toggle="tab" data-bs-target="#foto-male" type="button" role="tab">Hombre</button>
+                        </li>
+                        <li class="nav-item" role="presentation" th:if="${ejercicio.images != null and ejercicio.images.female != null}">
+                            <button class="nav-link btn-sm" id="female-tab" data-bs-toggle="tab" data-bs-target="#foto-female" type="button" role="tab">Mujer</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body text-center p-2 tab-content">
+                    <div class="tab-pane fade show active" id="foto-male" role="tabpanel" th:if="${ejercicio.images != null and ejercicio.images.male != null}">
+                        <img th:src="${ejercicio.images.male}" alt="Foto Hombre" class="img-fluid rounded" style="max-height: 380px; width: 100%; object-fit: contain;" />
+                    </div>
+                    <div class="tab-pane fade" id="foto-female" role="tabpanel" th:if="${ejercicio.images != null and ejercicio.images.female != null}">
+                        <img th:src="${ejercicio.images.female}" alt="Foto Mujer" class="img-fluid rounded" style="max-height: 380px; width: 100%; object-fit: contain;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAPA MUSCULAR -->
+            <div class="card border p-3 text-center bg-light" th:if="${ejercicio.muscleMap != null}">
+                <h6 class="fw-bold text-muted mb-2">Músculos Involucrados</h6>
+                <img th:src="${ejercicio.muscleMap}" alt="Mapa Muscular" class="img-fluid mx-auto" style="max-height: 220px;" />
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: DATOS, INSTRUCCIONES Y ERRORES -->
+        <div class="col-lg-6">
+
+            <!-- FICHA TÉCNICA -->
+            <div class="card border p-3 mb-3 bg-white">
+                <h5 class="fw-bold mb-3 border-bottom pb-2">Información Técnica</h5>
+                <p class="mb-2"><strong>Grupo Muscular:</strong> <span class="badge bg-dark" th:text="${ejercicio.group != null ? ejercicio.group.es : '-'}">Pecho</span></p>
+                <p class="mb-2"><strong>Equipamiento:</strong> <span class="badge bg-secondary" th:text="${ejercicio.equipment != null ? ejercicio.equipment.es : '-'}">Máquina</span></p>
+                <p class="mb-2">
+                    <strong>Músculos Principales:</strong>
+                    <span th:each="m, iter : ${ejercicio.primaryMuscles}" class="badge bg-primary me-1" th:text="${m.es}">Pectoral</span>
+                </p>
+                <p class="mb-0" th:if="${ejercicio.secondaryMuscles != null and !#lists.isEmpty(ejercicio.secondaryMuscles)}">
+                    <strong>Músculos Secundarios:</strong>
+                    <span th:each="m, iter : ${ejercicio.secondaryMuscles}" class="badge bg-info text-dark me-1" th:text="${m.es}">Hombros</span>
+                </p>
+            </div>
+
+            <!-- INSTRUCCIONES PASO A PASO -->
+            <div class="card border p-3 mb-3 bg-white" th:if="${ejercicio.instructions != null and !#lists.isEmpty(ejercicio.instructions.es)}">
+                <h5 class="fw-bold mb-2">Instrucciones de Ejecución</h5>
+                <ol class="ps-3 mb-0">
+                    <li th:each="instruccion : ${ejercicio.instructions.es}" th:text="${instruccion}" class="mb-2">Paso a paso</li>
+                </ol>
+            </div>
+
+            <!-- ERRORES COMUNES -->
+            <div class="card border border-danger border-opacity-25 bg-danger bg-opacity-10 p-3" th:if="${ejercicio.mistakes != null and !#lists.isEmpty(ejercicio.mistakes.es)}">
+                <h5 class="fw-bold text-danger mb-2">Errores Comunes a Evitar</h5>
+                <ul class="ps-3 mb-0 text-danger">
+                    <li th:each="error : ${ejercicio.mistakes.es}" th:text="${error}" class="mb-1">Error común</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

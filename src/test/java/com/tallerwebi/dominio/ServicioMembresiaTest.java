@@ -1,7 +1,10 @@
 package com.tallerwebi.dominio;
 
+import static net.bytebuddy.matcher.ElementMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -13,6 +16,7 @@ import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
 import com.tallerwebi.dominio.interfaces.ServicioMembresia;
 import java.time.LocalDate;
 import java.util.List;
+import net.bytebuddy.matcher.ElementMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -73,5 +77,26 @@ public class ServicioMembresiaTest {
     Membresia resultado = servicio.obtenerVigente(1L);
 
     assertThat(resultado, equalTo(vigente));
+  }
+
+  @Test
+  public void deberiaCalcularLosDiasRestantesDeLaMembresiaVigente() {
+    LocalDate hoy = LocalDate.now();
+    Membresia vigente = new Membresia();
+    vigente.setFechaVencimiento(hoy.plusDays(4));
+    when(repoMembresiaMock.buscarVigente(1L, hoy)).thenReturn(vigente);
+
+    Long dias = servicio.obtenerDiasRestantes(1L);
+
+    assertThat(dias, equalTo(4L));
+  }
+
+  @Test
+  public void deberiaRetornarNullSiElSocioNoTieneMembresiaVigente() {
+    when(repoMembresiaMock.buscarVigente(eq(1L), any(LocalDate.class))).thenReturn(null);
+
+    Long dias = servicio.obtenerDiasRestantes(1L);
+
+    assertNull(dias);
   }
 }
