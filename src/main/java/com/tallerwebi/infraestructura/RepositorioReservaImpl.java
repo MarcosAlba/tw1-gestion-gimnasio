@@ -55,16 +55,16 @@ public class RepositorioReservaImpl implements RepositorioReserva {
   }
 
   @Override
-  public boolean existeConfirmada(Long socioId, Long claseId) {
+  public boolean existeActiva(Long socioId, Long claseId) {
     Long cantidad = sessionFactory
       .getCurrentSession()
       .createQuery(
-        "select count(r) from Reserva r where r.socio.id = :socioId and r.clase.id = :claseId and r.estado = :estado",
+        "select count(r) from Reserva r where r.socio.id = :socioId and r.clase.id = :claseId and r.estado <> :cancelada",
         Long.class
       )
       .setParameter("socioId", socioId)
       .setParameter("claseId", claseId)
-      .setParameter("estado", EstadoReserva.CONFIRMADA)
+      .setParameter("cancelada", EstadoReserva.CANCELADA)
       .uniqueResult();
     return cantidad > 0;
   }
@@ -72,5 +72,19 @@ public class RepositorioReservaImpl implements RepositorioReserva {
   @Override
   public Reserva buscarPorId(Long id) {
     return sessionFactory.getCurrentSession().get(Reserva.class, id);
+  }
+
+  @Override
+  public Reserva buscarPrimeraEnEspera(Long claseId) {
+    return sessionFactory
+      .getCurrentSession()
+      .createQuery(
+        "from Reserva where clase.id = :claseId and estado = :enEspera order by fechaReserva asc, id asc",
+        Reserva.class
+      )
+      .setParameter("claseId", claseId)
+      .setParameter("enEspera", EstadoReserva.EN_ESPERA)
+      .setMaxResults(1)
+      .uniqueResult();
   }
 }

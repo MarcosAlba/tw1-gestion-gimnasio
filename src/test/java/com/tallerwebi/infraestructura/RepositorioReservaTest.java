@@ -159,14 +159,14 @@ public class RepositorioReservaTest {
   @Test
   @Transactional
   @Rollback
-  public void deberiaExistirUnaReservaConfirmadaDelSocioParaLaClase() {
+  public void deberiaExistirUnaReservaActivaSiElSocioTieneLaReservaConfirmada() {
     Usuario socio = dadoQueExisteUnSocio("socio@test.com");
     Clase clase = dadoQueExisteUnaClase("Spinning");
     repoReserva.guardar(
       dadoQueTengoUnaReserva(socio, clase, EstadoReserva.CONFIRMADA, LocalDateTime.now())
     );
 
-    boolean existe = repoReserva.existeConfirmada(socio.getId(), clase.getId());
+    boolean existe = repoReserva.existeActiva(socio.getId(), clase.getId());
 
     assertThat(existe, is(true));
   }
@@ -174,7 +174,7 @@ public class RepositorioReservaTest {
   @Test
   @Transactional
   @Rollback
-  public void noDeberiaExistirUnaReservaConfirmadaSiEstaCanceladaOEsDeOtroSocio() {
+  public void noDeberiaExistirUnaReservaActivaSiEstaCanceladaOEsDeOtroSocio() {
     Usuario socio = dadoQueExisteUnSocio("socio@test.com");
     Usuario otroSocio = dadoQueExisteUnSocio("otro@test.com");
     Clase clase = dadoQueExisteUnaClase("Spinning");
@@ -182,8 +182,42 @@ public class RepositorioReservaTest {
       dadoQueTengoUnaReserva(socio, clase, EstadoReserva.CANCELADA, LocalDateTime.now())
     );
 
-    assertThat(repoReserva.existeConfirmada(socio.getId(), clase.getId()), is(false));
-    assertThat(repoReserva.existeConfirmada(otroSocio.getId(), clase.getId()), is(false));
+    assertThat(repoReserva.existeActiva(socio.getId(), clase.getId()), is(false));
+    assertThat(repoReserva.existeActiva(otroSocio.getId(), clase.getId()), is(false));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaExistirUnaReservaActivaSiElSocioEstaEnListaDeEspera() {
+    Usuario socio = dadoQueExisteUnSocio("socio@test.com");
+    Clase clase = dadoQueExisteUnaClase("Spinning");
+    repoReserva.guardar(
+      dadoQueTengoUnaReserva(socio, clase, EstadoReserva.EN_ESPERA, LocalDateTime.now())
+    );
+
+    boolean existe = repoReserva.existeActiva(socio.getId(), clase.getId());
+
+    assertThat(existe, is(true));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void noDeberiaContarLasReservasEnListaDeEsperaComoLugaresOcupados() {
+    Usuario socio = dadoQueExisteUnSocio("socio@test.com");
+    Usuario otroSocio = dadoQueExisteUnSocio("otro@test.com");
+    Clase clase = dadoQueExisteUnaClase("Spinning");
+    repoReserva.guardar(
+      dadoQueTengoUnaReserva(socio, clase, EstadoReserva.CONFIRMADA, LocalDateTime.now())
+    );
+    repoReserva.guardar(
+      dadoQueTengoUnaReserva(otroSocio, clase, EstadoReserva.EN_ESPERA, LocalDateTime.now())
+    );
+
+    int confirmadas = repoReserva.contarConfirmadas(clase.getId());
+
+    assertThat(confirmadas, equalTo(1));
   }
 
   private Usuario dadoQueExisteUnSocio(String email) {
@@ -216,5 +250,44 @@ public class RepositorioReservaTest {
     reserva.setEstado(estado);
     reserva.setFechaReserva(fecha);
     return reserva;
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void deberiaBuscarLaReservaEnEsperaMasAntiguaDeLaClase() {
+    Usuario confirmado = dadoQueExisteUnSocio("confirmado@test.com");
+    Usuario primero = dadoQueExisteUnSocio("primero@test.com");
+    Usuario segundo = dadoQueExisteUnSocio("segundo@test.com");
+    Clase clase = dadoQueExisteUnaClase("Spinning");
+    LocalDateTime ahora = LocalDateTime.now();
+    repoReserva.guardar(
+      dadoQueTengoUnaReserva(confirmado, clase, EstadoReserva.CONFIRMADA, ahora.minusDays(3))
+    );
+    repoReserva.guardar(
+      dadoQueTengoUnaReserva(segundo, clase, EstadoReserva.EN_ESPERA, ahora.minusHours(1))
+    );
+    repoReserva.guardar(
+      dadoQueTengoUnaReserva(primero, clase, EstadoReserva.EN_ESPERA, ahora.minusDays(1))
+    );
+
+    Reserva encontrada = repoReserva.buscarPrimeraEnEspera(clase.getId());
+
+    assertThat(encontrada.getSocio(), equalTo(primero));
+  }
+
+  @Test
+  @Transactional
+  @Rollback
+  public void noDeberiaEncontrarNingunaReservaEnEsperaSiLaListaEstaVacia() {
+    Usuario socio = dadoQueExisteUnSocio("socio@test.com");
+    Clase clase = dadoQueExisteUnaClase("Spinning");
+    repoReserva.guardar(
+      dadoQueTengoUnaReserva(socio, clase, EstadoReserva.CONFIRMADA, LocalDateTime.now())
+    );
+
+    Reserva encontrada = repoReserva.buscarPrimeraEnEspera(clase.getId());
+
+    assertThat(encontrada, is(nullValue()));
   }
 }

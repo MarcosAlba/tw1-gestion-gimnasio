@@ -96,27 +96,35 @@ public class Usuario {
   public void activar() {
     activo = true;
   }
+
   public Integer getEdad() {
     return edad;
   }
+
   public void setEdad(Integer edad) {
     this.edad = edad;
   }
+
   public String getSexo() {
     return sexo;
   }
+
   public void setSexo(String sexo) {
     this.sexo = sexo;
   }
+
   public String getDomicilio() {
     return domicilio;
   }
+
   public void setDomicilio(String domicilio) {
     this.domicilio = domicilio;
   }
+
   public String getFotoPerfil() {
     return fotoPerfil;
   }
+
   public void setFotoPerfil(String fotoPerfil) {
     this.fotoPerfil = fotoPerfil;
   }
