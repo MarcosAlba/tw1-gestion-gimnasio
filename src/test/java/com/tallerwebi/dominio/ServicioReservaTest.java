@@ -21,12 +21,10 @@ import com.tallerwebi.dominio.interfaces.RepositorioReserva;
 import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
 import com.tallerwebi.dominio.interfaces.ServicioReserva;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.test.annotation.Rollback;
 
 public class ServicioReservaTest {
 
@@ -167,12 +165,15 @@ public class ServicioReservaTest {
 
   @Test
   public void deberiaCancelarUnaReservaDelSocio() {
+    clase.setCupo(10);
     Reserva reserva = dadoQueExisteUnaReservaDe(socio, 7L);
 
     servicio.cancelar(1L, 7L);
 
     assertThat(reserva.getEstado(), equalTo(EstadoReserva.CANCELADA));
     verify(repoReservaMock, times(1)).modificar(reserva);
+    assertThat(reserva.getClase().getCupo(), equalTo(11));
+    verify(repoClaseMock, times(1)).modificar(reserva.getClase());
   }
 
   @Test

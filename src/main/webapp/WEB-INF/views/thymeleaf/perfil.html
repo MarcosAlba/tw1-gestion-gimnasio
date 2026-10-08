@@ -1,0 +1,112 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!--
+  Perfil del usuario (socio o entrenador), pantalla de solo lectura: muestra como quedo.
+  Desde aca se va a la edicion con el boton "Editar perfil" (/perfil/editar).
+  Modelo que espera del controlador:
+    usuario  Usuario con la sesion iniciada: nombre, apellido, email, rol, edad, deporte, fotoPerfil
+    exito    mensaje de confirmacion (por ejemplo tras guardar), o null
+  Los datos que no se cargaron se muestran como "Sin completar".
+-->
+
+<head th:replace="~{fragmentos :: cabecera('Mi perfil')}"></head>
+
+<body>
+
+  <nav th:replace="~{fragmentos :: barra('perfil')}"></nav>
+
+  <main role="main" class="pagina perfil">
+
+    <header class="pagina-cabecera">
+      <div>
+        <h1>Mi perfil</h1>
+        <p>Así te ven en el gimnasio.</p>
+      </div>
+    </header>
+
+    <p th:if="${exito != null}" class="alert alert-success" th:text="${exito}">Perfil actualizado.</p>
+
+    <div class="perfil-grilla">
+
+      <!-- Tarjeta lateral: foto, nombre y rol -->
+      <aside class="perfil-tarjeta">
+        <div class="avatar" id="avatar">
+          <img id="avatar-imagen" th:if="${usuario.fotoPerfil != null and !#strings.isEmpty(usuario.fotoPerfil)}"
+               th:src="${usuario.fotoPerfil}" alt="Tu foto de perfil">
+          <span id="avatar-iniciales"
+                th:unless="${usuario.fotoPerfil != null and !#strings.isEmpty(usuario.fotoPerfil)}"
+                th:text="${usuario.nombre != null and !#strings.isEmpty(usuario.nombre)} ? ${#strings.toUpperCase(#strings.substring(usuario.nombre, 0, 1))} : '?'">J</span>
+        </div>
+
+        <h2 class="perfil-nombre"
+            th:text="${#strings.isEmpty(#strings.trim(#strings.defaultString(usuario.nombre, '') + ' ' + #strings.defaultString(usuario.apellido, '')))} ? 'Sin nombre' : ${#strings.trim(#strings.defaultString(usuario.nombre, '') + ' ' + #strings.defaultString(usuario.apellido, ''))}">Juan Perez</h2>
+        <p class="perfil-rol"
+           th:text="${usuario.rol == 'ENTRENADOR'} ? 'Entrenador' : 'Socio'">Socio</p>
+        <p class="perfil-email" th:text="${usuario.email}">socio@unlam.edu.ar</p>
+
+        <a id="btn-editar-perfil" class="btn btn-primary perfil-subir" th:href="@{/perfil/editar}">Editar perfil</a>
+      </aside>
+
+      <!-- Datos -->
+      <section class="perfil-datos perfil-lectura">
+
+        <h3 class="perfil-seccion">Sobre vos</h3>
+        <dl class="perfil-ficha">
+          <dt>Nombre</dt>
+          <dd th:classappend="${usuario.nombre == null or #strings.isEmpty(usuario.nombre)} ? 'sin-completar'"
+              th:text="${usuario.nombre != null and !#strings.isEmpty(usuario.nombre)} ? ${usuario.nombre} : 'Sin completar'">Juan</dd>
+
+          <dt>Apellido</dt>
+          <dd th:classappend="${usuario.apellido == null or #strings.isEmpty(usuario.apellido)} ? 'sin-completar'"
+              th:text="${usuario.apellido != null and !#strings.isEmpty(usuario.apellido)} ? ${usuario.apellido} : 'Sin completar'">Perez</dd>
+
+          <dt>Edad</dt>
+          <dd th:classappend="${usuario.edad == null} ? 'sin-completar'"
+              th:text="${usuario.edad != null} ? ${usuario.edad + ' años'} : 'Sin completar'">30 años</dd>
+
+          <dt>Email</dt>
+          <dd th:text="${usuario.email}">socio@unlam.edu.ar</dd>
+        </dl>
+
+        <!-- Solo el socio tiene deporte: es lo que usa su rutina -->
+        <div th:if="${usuario.rol == 'SOCIO'}">
+          <h3 class="perfil-seccion">Tu deporte</h3>
+          <p class="perfil-sin-deporte" th:if="${usuario.deporte == null}">
+            Todavía no elegiste un deporte. Sumalo desde "Editar perfil" para tener una rutina a tu medida.
+          </p>
+          <div class="perfil-deporte" th:unless="${usuario.deporte == null}">
+            <p class="perfil-deporte-nombre"
+               th:text="${usuario.deporte.name() == 'FUTBOL'} ? 'Fútbol' : (${usuario.deporte.name() == 'PADEL'} ? 'Pádel' : (${usuario.deporte.name() == 'BASQUET'} ? 'Básquet' : ${#strings.capitalize(#strings.toLowerCase(usuario.deporte))}))">Tenis</p>
+            <p class="campo-ayuda">Tu rutina trabaja más lo que tu deporte necesita.</p>
+            <dl class="perfil-capacidades">
+              <dt>Agilidad</dt>
+              <dd class="intensidad intensidad-agilidad" data-n="3"
+                  th:attr="data-n=${usuario.deporte.agilidad}"><i></i><i></i><i></i></dd>
+              <dt>Cardio</dt>
+              <dd class="intensidad intensidad-cardio" data-n="2"
+                  th:attr="data-n=${usuario.deporte.cardio}"><i></i><i></i><i></i></dd>
+              <dt>Coordinación</dt>
+              <dd class="intensidad intensidad-coordinacion" data-n="2"
+                  th:attr="data-n=${usuario.deporte.coordinacion}"><i></i><i></i><i></i></dd>
+              <dt>Fuerza</dt>
+              <dd class="intensidad intensidad-fuerza" data-n="1"
+                  th:attr="data-n=${usuario.deporte.fuerza}"><i></i><i></i><i></i></dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="perfil-acciones">
+          <a class="btn btn-lg btn-primary" th:if="${usuario.rol == 'SOCIO'}" th:href="@{/rutina}">Ver mi rutina</a>
+          <a class="btn btn-lg btn-primary" th:if="${usuario.rol == 'ENTRENADOR'}" th:href="@{/clases}">Ver mis clases</a>
+          <a class="portada-enlace perfil-cancelar" th:href="@{/home}">Volver al inicio</a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+
+</html>

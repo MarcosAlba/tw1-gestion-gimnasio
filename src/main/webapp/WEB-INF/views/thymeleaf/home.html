@@ -48,6 +48,12 @@
           <span class="acceso-texto">Cargá ejercicios por capacidad física.</span>
         </a>
       </li>
+      <li th:if="${session.ROL == 'ENTRENADOR' or session.ROL == 'SOCIO'}">
+        <a class="acceso" th:href="@{/perfil}">
+          <span class="acceso-titulo">Mi perfil</span>
+          <span class="acceso-texto">Editá tus datos y tu foto.</span>
+        </a>
+      </li>
     </ul>
   </main>
 
