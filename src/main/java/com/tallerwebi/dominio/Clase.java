@@ -92,4 +92,6 @@ public class Clase {
   public void setEntrenador(Usuario entrenador) {
     this.entrenador = entrenador;
   }
+
+  public static class EjercicioApi {}
 }

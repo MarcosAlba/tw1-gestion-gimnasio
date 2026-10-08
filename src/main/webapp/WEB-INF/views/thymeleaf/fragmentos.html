@@ -52,6 +52,9 @@
       <li th:if="${session.ROL == 'ENTRENADOR'}">
         <a th:href="@{/ejercicios}" th:aria-current="${activo == 'ejercicios'} ? 'page'">Ejercicios</a>
       </li>
+        <li th:if="${session.ROL == 'ENTRENADOR' or session.ROL == 'SOCIO'}">
+            <a th:href="@{/catalogo}" th:aria-current="${activo == 'catalogo'} ? 'page'">Lista de Ejercicios</a>
+        </li>
       <li>
         <a th:href="@{/perfil}" th:aria-current="${activo == 'perfil'} ? 'page'">Mi perfil</a>
       </li>
@@ -59,6 +62,7 @@
         <span class="barra-rol"
           th:text="${session.ROL == 'SOCIO'} ? 'Socio' : (${session.ROL == 'ENTRENADOR'} ? 'Entrenador' : 'Administración')">Socio</span>
       </li>
+
     </ul>
 
     <!-- Sin sesion: horarios publicos y accesos para entrar o registrarse -->

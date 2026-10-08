@@ -1,0 +1,151 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: cabecera('Catálogo de Ejercicios')}"></head>
+<body>
+<nav th:replace="~{fragmentos :: barra('catalogo')}"></nav>
+
+<main role="main" class="pagina" style="max-width: 75rem;">
+    <header class="pagina-cabecera">
+        <div>
+            <h1>Lista de Ejercicios</h1>
+            <p>Explorá los ejercicios técnicos, seleccioná el género de demostración y filtrá por grupo o equipamiento.</p>
+        </div>
+    </header>
+
+    <!-- BARRA DE FILTROS Y BÚSQUEDA -->
+    <form th:action="@{/catalogo}" method="GET" class="p-3 mb-4 bg-white border rounded shadow-sm">
+        <div class="row g-3 align-items-end">
+
+            <!-- Búsqueda por texto -->
+            <div class="col-12 col-md-4">
+                <label for="buscar" class="campo-etiqueta">Buscar por nombre</label>
+                <input type="text" id="buscar" name="buscar" class="form-control" placeholder="Ej: Press, Sentadilla..."
+                       th:value="${filtroBuscar}" />
+            </div>
+
+            <!-- Filtro por Grupo -->
+            <div class="col-12 col-md-3">
+                <label for="grupo" class="campo-etiqueta">Grupo Muscular</label>
+                <select id="grupo" name="grupo" class="form-select">
+                    <option value="">Todos los grupos</option>
+                    <option th:each="itemGrupo : ${grupos}"
+                            th:value="${itemGrupo}"
+                            th:text="${itemGrupo}"
+                            th:selected="${itemGrupo == filtroGrupo}">
+                    </option>
+                </select>
+            </div>
+
+            <!-- Filtro por Equipamiento -->
+            <div class="col-12 col-md-3">
+                <label for="equipamiento" class="campo-etiqueta">Equipamiento</label>
+                <select id="equipamiento" name="equipamiento" class="form-select">
+                    <option value="">Todo el equipamiento</option>
+                    <option th:each="itemEquipo : ${equipamientos}"
+                            th:value="${itemEquipo}"
+                            th:text="${itemEquipo}"
+                            th:selected="${itemEquipo == filtroEquipamiento}">
+                    </option>
+                </select>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="col-12 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                <a th:href="@{/catalogo}" class="btn btn-outline-secondary">Limpiar</a>
+            </div>
+        </div>
+
+        <!-- FILTRO DE GÉNERO (Botones Toggle) -->
+        <div class="d-flex align-items-center gap-3 mt-3 pt-3 border-top">
+            <span class="campo-etiqueta mb-0">Demostración:</span>
+            <div class="btn-group" role="group">
+                <input type="radio" class="btn-check" name="genero" id="generoHombre" value="male"
+                       th:checked="${filtroGenero == 'male'}" onchange="this.form.submit()">
+                <label class="btn btn-sm btn-outline-dark" for="generoHombre">Hombre</label>
+
+                <input type="radio" class="btn-check" name="genero" id="generoMujer" value="female"
+                       th:checked="${filtroGenero == 'female'}" onchange="this.form.submit()">
+                <label class="btn btn-sm btn-outline-dark" for="generoMujer">Mujer</label>
+            </div>
+        </div>
+    </form>
+
+    <!-- LISTADO DE TARJETAS CLICKEABLES -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" th:if="${ejercicios != null and !#lists.isEmpty(ejercicios)}">
+        <div class="col" th:each="ejercicio : ${ejercicios}">
+            <a th:href="@{'/catalogo/' + ${ejercicio.slug}}" class="text-decoration-none text-dark h-100 d-block">
+                <div class="card h-100 shadow-sm border border-secondary border-opacity-25 card-hover">
+
+                    <!-- IMAGEN PRINCIPAL (MÁS GRANDE: 270px) -->
+                    <div class="position-relative bg-light text-center" style="height: 270px; overflow: hidden;">
+                        <!-- Mostrar imagen de mujer si se seleccionó 'female' y existe, sino la de hombre -->
+                        <img th:if="${filtroGenero == 'female' and ejercicio.images != null and ejercicio.images.female != null}"
+                             th:src="${ejercicio.images.female}"
+                             alt="Demostración femenina"
+                             class="w-100 h-100"
+                             style="object-fit: cover;"
+                             loading="lazy" />
+                        <img th:if="${(filtroGenero != 'female' or ejercicio.images == null or ejercicio.images.female == null) and ejercicio.images != null and ejercicio.images.male != null}"
+                             th:src="${ejercicio.images.male}"
+                             alt="Demostración masculina"
+                             class="w-100 h-100"
+                             style="object-fit: cover;"
+                             loading="lazy" />
+                        <div th:if="${ejercicio.images == null or (ejercicio.images.male == null and ejercicio.images.female == null)}"
+                             class="d-flex align-items-center justify-content-center h-100 text-muted">
+                            Sin imagen disponible
+                        </div>
+
+                        <!-- Badge Grupo -->
+                        <span class="badge bg-dark position-absolute top-0 end-0 m-2 px-2 py-1"
+                              th:if="${ejercicio.group != null}"
+                              th:text="${ejercicio.group.es}">Pecho</span>
+                    </div>
+
+                    <!-- CUERPO DE LA TARJETA -->
+                    <div class="card-body d-flex flex-column p-3">
+                        <h5 class="card-title fw-bold mb-1" th:text="${ejercicio.name != null ? ejercicio.name.es : 'Ejercicio'}">Press de pecho</h5>
+                        <small class="text-muted mb-2 fst-italic" th:if="${ejercicio.name != null and ejercicio.name.en != null}" th:text="${ejercicio.name.en}">Chest press</small>
+
+                        <div class="mb-2">
+                <span class="badge bg-secondary me-1" th:if="${ejercicio.equipment != null}">
+                  <span th:text="${ejercicio.equipment.es}">Máquina</span>
+                </span>
+                        </div>
+
+                        <p class="card-text small mb-1">
+                            <strong>Músculo Principal:</strong>
+                            <span th:each="musculoPrimario, iter : ${ejercicio.primaryMuscles}"
+                                  th:text="${musculoPrimario.es} + (${iter.last} ? '' : ', ')">Pectoral</span>
+                        </p>
+                        <p class="card-text small text-muted mb-0" th:if="${ejercicio.secondaryMuscles != null and !#lists.isEmpty(ejercicio.secondaryMuscles)}">
+                            <strong>Secundarios:</strong>
+                            <span th:each="musculoSecundario, iter : ${ejercicio.secondaryMuscles}"
+                                  th:text="${musculoSecundario.es} + (${iter.last} ? '' : ', ')">Hombros</span>
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- MENSAJE SI NO HAY RESULTADOS -->
+    <p th:if="${ejercicios == null or #lists.isEmpty(ejercicios)}" class="vacio text-center">
+        No se encontraron ejercicios con los filtros seleccionados.
+    </p>
+</main>
+
+<style>
+    .card-hover {
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.12) !important;
+    }
+</style>
+
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

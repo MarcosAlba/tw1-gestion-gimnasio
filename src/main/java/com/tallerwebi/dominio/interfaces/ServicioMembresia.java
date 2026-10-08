@@ -8,4 +8,5 @@ public interface ServicioMembresia {
   void registrar(Long socioId, TipoMembresia tipo);
   List<Membresia> historial(Long socioId);
   Membresia obtenerVigente(Long socioId);
+  Long obtenerDiasRestantes(Long socioId);
 }

@@ -18,6 +18,15 @@
     </header>
 
     <ul class="accesos">
+        <!-- AVISO  -->
+        <div th:if="${session.AVISO_MEMBRESIA != null}" class="alert alert-warning d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <strong th:text="${session.AVISO_MEMBRESIA}">¡Atención! Tu membresía está por vencer en 3 días.</strong>
+                <span class="ms-2">Renovala para seguir reservando tus clases sin interrupciones.</span>
+            </div>
+            <a th:href="@{/membresias}" class="btn btn-sm btn-dark">Renovar</a>
+        </div>
+
       <li th:if="${session.ROL == 'ENTRENADOR' or session.ROL == 'SOCIO'}">
         <a class="acceso" th:href="@{/clases}">
           <span class="acceso-titulo">Clases</span>
