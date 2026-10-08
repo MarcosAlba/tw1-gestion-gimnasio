@@ -1679,3 +1679,367 @@ a:hover {
     transition: none !important;
   }
 }
+
+/* --- Perfil -------------------------------------------------------------- */
+
+.perfil-grilla {
+  display: grid;
+  grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.perfil-tarjeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.75rem 1.25rem;
+  background: var(--magnesio);
+  border: 2px solid var(--tinta);
+  border-top: 10px solid var(--disco-fuerza);
+}
+
+/* Foto: aro con los cuatro colores de las capacidades */
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 9.5rem;
+  height: 9.5rem;
+  margin-bottom: 1rem;
+  padding: 5px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--disco-fuerza) 0 25%,
+    var(--disco-agilidad) 0 50%,
+    var(--disco-cardio) 0 75%,
+    var(--disco-coordinacion) 0 100%
+  );
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid var(--magnesio);
+}
+
+.avatar-iniciales,
+#avatar-iniciales {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid var(--magnesio);
+  background: var(--acero);
+  color: #fff;
+  font-family: var(--fuente-titulo);
+  font-size: 3.6rem;
+  font-weight: 900;
+}
+
+.perfil-nombre {
+  margin: 0;
+  font-size: 1.9rem;
+  text-transform: uppercase;
+}
+
+.perfil-rol {
+  display: inline-block;
+  margin: 0.4rem 0 0.2rem;
+  padding: 0.15rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tinta);
+  background: var(--disco-cardio);
+}
+
+.perfil-email {
+  margin: 0 0 1.25rem;
+  color: #4a5058;
+  overflow-wrap: anywhere;
+}
+
+.perfil-subir {
+  cursor: pointer;
+}
+
+/* El input real queda oculto: se maneja con la etiqueta "Elegir foto" */
+.perfil-archivo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.perfil-archivo:focus-visible + .campo-ayuda,
+.perfil-subir:focus-within {
+  outline: 3px solid var(--disco-agilidad);
+}
+
+.campo-ayuda {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: #5c636b;
+}
+
+.campo-error {
+  margin: 0.5rem 0 0;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--error);
+  background: var(--error-fondo);
+}
+
+.perfil-datos {
+  display: flex;
+  flex-direction: column;
+}
+
+.perfil-datos .campo-etiqueta {
+  margin-top: 1rem;
+}
+
+.perfil-datos .campo-doble .campo-etiqueta:first-child {
+  margin-top: 0;
+}
+
+.campo-doble {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1rem;
+  margin-top: 1rem;
+}
+
+.campo-doble:first-child {
+  margin-top: 0;
+}
+
+.campo-doble .campo-etiqueta {
+  margin-top: 0;
+}
+
+.perfil-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2rem;
+  margin-top: 2rem;
+}
+
+.perfil-cancelar {
+  color: var(--tinta);
+}
+
+.perfil-cancelar:hover {
+  color: var(--disco-fuerza);
+}
+
+@media (max-width: 767.98px) {
+  .perfil-grilla {
+    grid-template-columns: 1fr;
+  }
+  .campo-doble {
+    grid-template-columns: 1fr;
+    gap: 1rem 0;
+  }
+}
+
+/* --- Perfil: editor de la foto ------------------------------------------- */
+
+.editor-foto {
+  width: min(24rem, calc(100vw - 2rem));
+  padding: 1.5rem;
+  color: #fff;
+  background: var(--acero);
+  border: 2px solid var(--tinta);
+  border-top: 10px solid var(--disco-cardio);
+  border-radius: 0;
+  box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.4);
+}
+
+.editor-foto::backdrop {
+  background: rgba(20, 22, 26, 0.7);
+}
+
+.editor-foto h2 {
+  margin: 0 0 1rem;
+  color: #fff;
+  font-size: 1.9rem;
+  text-transform: uppercase;
+}
+
+.editor-lienzo {
+  background: var(--tinta);
+}
+
+.editor-lienzo canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.editor-lienzo canvas:active {
+  cursor: grabbing;
+}
+
+.editor-lienzo canvas:focus-visible {
+  outline: 3px solid var(--disco-cardio);
+  outline-offset: 2px;
+}
+
+.editor-zoom {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.editor-zoom-etiqueta {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d3d7db;
+}
+
+.editor-zoom input[type="range"] {
+  flex: 1;
+  accent-color: var(--disco-cardio);
+}
+
+.editor-ayuda {
+  color: #b8bec4;
+}
+
+.editor-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.editor-reiniciar {
+  margin-right: auto;
+  padding: 0;
+  font-weight: 600;
+  color: var(--disco-cardio);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.editor-foto .btn-outline-dark {
+  color: #fff;
+  border-color: #fff;
+}
+
+.editor-foto .btn-outline-dark:hover {
+  color: var(--tinta);
+  background: #fff;
+}
+
+.editor-foto .btn-primary {
+  background: var(--disco-fuerza);
+  border-color: var(--disco-fuerza);
+}
+
+.editor-foto .btn-primary:hover {
+  background: #e0362a;
+  border-color: #e0362a;
+}
+
+/* --- Perfil: pantalla de lectura ----------------------------------------- */
+
+.perfil-seccion {
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.4rem;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--tinta);
+}
+
+.perfil-lectura > div {
+  margin-top: 2rem;
+}
+
+.perfil-ficha {
+  display: grid;
+  grid-template-columns: minmax(7rem, 10rem) 1fr;
+  gap: 0.6rem 1rem;
+  margin: 0;
+}
+
+.perfil-ficha dt {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5c636b;
+  align-self: center;
+}
+
+.perfil-ficha dd {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.sin-completar {
+  font-weight: 400;
+  font-style: italic;
+  color: #7b828a;
+}
+
+.perfil-sin-deporte {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  color: #4a5058;
+  background: var(--aviso-fondo);
+  border-left: 6px solid var(--disco-cardio);
+}
+
+.perfil-deporte-nombre {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: 2.4rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.perfil-capacidades {
+  display: grid;
+  grid-template-columns: minmax(7rem, 10rem) auto;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  margin: 1rem 0 0;
+}
+
+.perfil-capacidades dt {
+  font-weight: 600;
+}
+
+.perfil-capacidades dd {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+}
+
+.perfil-capacidades .intensidad i {
+  width: 1.8rem;
+  height: 0.8rem;
+}
+

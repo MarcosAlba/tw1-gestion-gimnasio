@@ -53,6 +53,9 @@
         <a th:href="@{/ejercicios}" th:aria-current="${activo == 'ejercicios'} ? 'page'">Ejercicios</a>
       </li>
       <li>
+        <a th:href="@{/perfil}" th:aria-current="${activo == 'perfil'} ? 'page'">Mi perfil</a>
+      </li>
+      <li>
         <span class="barra-rol"
           th:text="${session.ROL == 'SOCIO'} ? 'Socio' : (${session.ROL == 'ENTRENADOR'} ? 'Entrenador' : 'Administración')">Socio</span>
       </li>
