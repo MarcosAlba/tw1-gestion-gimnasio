@@ -250,18 +250,18 @@ public class ControladorLoginTest {
 
     assertThat(modelAndView.getViewName(), equalToIgnoringCase("redirect:/home"));
   }
-//    @Test
-//    public void loginDeSocioConMembresiaPorVencerDeberiaGuardarAvisoEnSesion() {
-//        Usuario socioMock = mock(Usuario.class);
-//        when(socioMock.getRol()).thenReturn("SOCIO");
-//        when(socioMock.getId()).thenReturn(1L);
-//        when(requestMock.getSession()).thenReturn(sessionMock);
-//        when(servicioLoginMock.consultarUsuario(anyString(), anyString())).thenReturn(socioMock);
-//        when(servicioMembresiaMock.obtenerDiasRestantes(1L)).thenReturn(3L);
-//
-//        controladorLogin.validarLogin(datosLoginMock, requestMock, null);
-//
-//        verify(sessionMock, times(1)).setAttribute(eq("AVISO_MEMBRESIA"), containsString("3 días"));
-//    }
+  //    @Test
+  //    public void loginDeSocioConMembresiaPorVencerDeberiaGuardarAvisoEnSesion() {
+  //        Usuario socioMock = mock(Usuario.class);
+  //        when(socioMock.getRol()).thenReturn("SOCIO");
+  //        when(socioMock.getId()).thenReturn(1L);
+  //        when(requestMock.getSession()).thenReturn(sessionMock);
+  //        when(servicioLoginMock.consultarUsuario(anyString(), anyString())).thenReturn(socioMock);
+  //        when(servicioMembresiaMock.obtenerDiasRestantes(1L)).thenReturn(3L);
+  //
+  //        controladorLogin.validarLogin(datosLoginMock, requestMock, null);
+  //
+  //        verify(sessionMock, times(1)).setAttribute(eq("AVISO_MEMBRESIA"), containsString("3 días"));
+  //    }
 
 }

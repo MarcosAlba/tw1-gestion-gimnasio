@@ -91,6 +91,12 @@ public class ServicioMembresiaTest {
     assertThat(dias, equalTo(4L));
   }
 
+  public void deberiaDevolverHistorialVacioSiElSocioNoTieneMembresias() {
+    when(repoMembresiaMock.buscarPorSocio(1L)).thenReturn(List.of());
+    List<Membresia> resultado = servicio.historial(1L);
+    assertThat(resultado, equalTo(List.of()));
+  }
+
   @Test
   public void deberiaRetornarNullSiElSocioNoTieneMembresiaVigente() {
     when(repoMembresiaMock.buscarVigente(eq(1L), any(LocalDate.class))).thenReturn(null);
@@ -98,9 +104,5 @@ public class ServicioMembresiaTest {
     Long dias = servicio.obtenerDiasRestantes(1L);
 
     assertNull(dias);
-  public void deberiaDevolverHistorialVacioSiElSocioNoTieneMembresias() {
-    when(repoMembresiaMock.buscarPorSocio(1L)).thenReturn(List.of());
-    List<Membresia> resultado = servicio.historial(1L);
-    assertThat(resultado, equalTo(List.of()));
   }
 }
