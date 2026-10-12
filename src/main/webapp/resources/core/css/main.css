@@ -2043,3 +2043,13 @@ a:hover {
   height: 0.8rem;
 }
 
+.barra-cerrar-sesion {
+  color: #adb5bd;
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+}
+
+.barra-cerrar-sesion:hover {
+  color: #ff6b6b;
+}

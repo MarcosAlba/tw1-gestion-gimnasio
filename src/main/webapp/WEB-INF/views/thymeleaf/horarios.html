@@ -40,24 +40,57 @@
            th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'COORDINACION'} ? 'true'">Coordinación</a>
       </nav>
     </header>
-
+      <div th:if="${exito != null}" class="alert alert-success mt-3" th:text="${exito}"></div>
+      <div th:if="${error != null}" class="alert alert-danger mt-3" th:text="${error}"></div>
     <section class="semana">
-      <div class="semana-grilla" th:style="'--dias:' + ${#maps.size(clasesPorDia)}">
         <div class="dia" th:each="dia : ${clasesPorDia}">
-          <h3>
-            <span th:text="${#temporals.dayOfWeekName(dia.key)}">Lunes</span>
-            <small th:text="${#temporals.format(dia.key, 'dd/MM')}">05/10</small>
-          </h3>
-          <div class="turno" th:each="c : ${dia.value}"
-               th:classappend="'turno-' + ${#strings.toLowerCase(c.capacidad.name())}">
-            <b th:text="${#temporals.format(c.inicio, 'HH:mm')}">18:00</b>
-            <span th:text="${c.nombre}">Funcional</span>
-            <small th:text="${c.lugar} + ' · ' + ${c.duracion} + ' min'">Sala 1 · 60 min</small>
-          </div>
-          <p class="dia-vacio" th:if="${#lists.isEmpty(dia.value)}">Sin clases</p>
-        </div>
-      </div>
+            <h3>
+                <span th:text="${#temporals.dayOfWeekName(dia.key)}">Lunes</span>
+                <small th:text="${#temporals.format(dia.key, 'dd/MM')}">05/10</small>
+            </h3>
 
+            <!-- Botón accesible solo para el ENTRENADOR -->
+            <div th:if="${session.ROL == 'ENTRENADOR'}" class="mb-2 text-center">
+                <a class="btn btn-sm btn-outline-primary w-100"
+                   th:href="@{/clases/nueva(fecha=${#temporals.format(dia.key, 'yyyy-MM-dd')})}">
+                    + Clase
+                </a>
+            </div>
+
+
+            <div class="turno" th:each="c : ${dia.value}"
+                 th:classappend="'turno-' + ${#strings.toLowerCase(c.capacidad.name())}">
+                <b th:text="${#temporals.format(c.inicio, 'HH:mm')}">18:00</b>
+                <span th:text="${c.nombre}">Spinning</span>
+                <small th:text="${c.lugar} + ' • ' + ${c.duracion} + ' min'">Sala 1 • 45 min</small>
+
+                <!-- Detalle de cupos -->
+                <div class="mt-1 small text-muted">
+                    <span th:if="${c.cupo > 0}" th:text="'Cupos: ' + ${c.cupo}">Cupos: 5</span>
+                    <span th:if="${c.cupo <= 0}" class="text-danger fw-bold">Completa</span>
+                </div>
+
+                <!-- Botones para el Socio -->
+                <div th:if="${session.ROL == 'SOCIO'}" class="mt-2">
+                    <!-- Si ya está inscripto -->
+                    <span th:if="${clasesReservadasIds != null and clasesReservadasIds.contains(c.id)}"
+                          class="badge bg-success w-100 py-1">Inscripto</span>
+
+                    <!-- Si no está inscripto -->
+                    <form th:unless="${clasesReservadasIds != null and clasesReservadasIds.contains(c.id)}"
+                          th:action="@{/reservas/reservar}" method="POST">
+                        <input type="hidden" name="claseId" th:value="${c.id}" />
+                        <input type="hidden" name="origen" value="horarios" />
+                        <button class="btn btn-sm w-100"
+                                th:classappend="${c.cupo > 0} ? 'btn-primary' : 'btn-outline-warning'"
+                                type="submit"
+                                th:text="${c.cupo > 0} ? 'Reservar' : 'Anotarme en lista'">Reservar</button>
+                    </form>
+                </div>
+            </div>
+
+            <p class="dia-vacio" th:if="${#lists.isEmpty(dia.value)}">Sin clases</p>
+        </div>
       <ul class="leyenda" aria-label="Referencias de colores">
         <li><i class="disco disco-fuerza"></i>Fuerza</li>
         <li><i class="disco disco-agilidad"></i>Agilidad</li>

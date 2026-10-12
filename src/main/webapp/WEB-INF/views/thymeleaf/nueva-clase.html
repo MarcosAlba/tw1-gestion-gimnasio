@@ -19,8 +19,8 @@
       <label class="campo-etiqueta" for="nombre">Nombre</label>
       <input th:field="*{nombre}" type="text" id="nombre" class="form-control" placeholder="Spinning" required />
 
-      <label class="campo-etiqueta" for="inicio">Fecha y hora de inicio</label>
-      <input th:field="*{inicio}" type="datetime-local" id="inicio" class="form-control" required />
+        <label class="campo-etiqueta" for="inicio">Fecha y hora de inicio</label>
+        <input th:field="*{inicio}" type="datetime-local" id="inicio" class="form-control" required />
 
       <label class="campo-etiqueta" for="duracion">Duración en minutos</label>
       <input th:field="*{duracion}" type="number" min="1" id="duracion" class="form-control" placeholder="45" required />
@@ -46,6 +46,18 @@
   </main>
 
   <th:block th:replace="~{fragmentos :: scripts}"></th:block>
+
+  <script>
+      (function () {
+        const inputInicio = document.getElementById("inicio");
+        if (inputInicio) {
+          const ahora = new Date();
+          ahora.setMinutes(ahora.getMinutes() - ahora.getTimezoneOffset());
+          inputInicio.min = ahora.toISOString().slice(0, 16);
+        }
+      })();
+  </script>
+
 
 </body>
 

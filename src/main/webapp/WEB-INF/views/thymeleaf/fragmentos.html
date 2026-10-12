@@ -62,7 +62,9 @@
         <span class="barra-rol"
           th:text="${session.ROL == 'SOCIO'} ? 'Socio' : (${session.ROL == 'ENTRENADOR'} ? 'Entrenador' : 'Administración')">Socio</span>
       </li>
-
+        <li>
+            <a id="btn-cerrar-sesion" class="barra-cerrar-sesion" th:href="@{/cerrar-sesion}">Cerrar sesión</a>
+        </li>
     </ul>
 
     <!-- Sin sesion: horarios publicos y accesos para entrar o registrarse -->

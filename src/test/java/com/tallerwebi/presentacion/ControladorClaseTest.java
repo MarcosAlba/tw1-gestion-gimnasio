@@ -8,9 +8,12 @@ import static org.mockito.Mockito.*;
 
 import com.tallerwebi.dominio.Clase;
 import com.tallerwebi.dominio.enums.CapacidadFisica;
+import com.tallerwebi.dominio.excepcion.ClaseSuperpuesta;
 import com.tallerwebi.dominio.excepcion.EntrenadorInvalido;
 import com.tallerwebi.dominio.excepcion.FechaClaseInvalida;
+import com.tallerwebi.dominio.excepcion.LugarOcupado;
 import com.tallerwebi.dominio.interfaces.ServicioClase;
+import com.tallerwebi.dominio.interfaces.ServicioReserva;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
@@ -28,6 +31,7 @@ public class ControladorClaseTest {
   private ServicioClase servicioMock;
   private HttpServletRequest requestMock;
   private HttpSession sessionMock;
+  private ServicioReserva servicioReservaMock;
 
   @BeforeEach
   public void init() {
@@ -35,14 +39,15 @@ public class ControladorClaseTest {
     requestMock = mock(HttpServletRequest.class);
     sessionMock = mock(HttpSession.class);
     when(requestMock.getSession()).thenReturn(sessionMock);
-    controlador = new ControladorClase(servicioMock);
+    servicioReservaMock = mock(ServicioReserva.class);
+    controlador = new ControladorClase(servicioMock, servicioReservaMock);
   }
 
   @Test
   public void deberiaMostrarElFormularioDeAltaSiEsEntrenador() {
     dadoQueSoy("ENTRENADOR", 1L);
 
-    ModelAndView modelAndView = controlador.irANuevaClase(requestMock);
+    ModelAndView modelAndView = controlador.irANuevaClase(null, requestMock);
 
     assertThat(modelAndView.getViewName(), equalTo("nueva-clase"));
     assertThat(modelAndView.getModel().get("datosClase"), notNullValue());
@@ -52,7 +57,7 @@ public class ControladorClaseTest {
   public void noDeberiaMostrarElFormularioDeAltaSiNoEsEntrenador() {
     dadoQueSoy("SOCIO", 2L);
 
-    ModelAndView modelAndView = controlador.irANuevaClase(requestMock);
+    ModelAndView modelAndView = controlador.irANuevaClase(null, requestMock);
 
     assertThat(modelAndView.getViewName(), equalTo("redirect:/login"));
   }
@@ -146,7 +151,7 @@ public class ControladorClaseTest {
     Map<LocalDate, List<Clase>> semana = new LinkedHashMap<>();
     when(servicioMock.listarSemana(null)).thenReturn(semana);
 
-    ModelAndView modelAndView = controlador.verHorarios(null);
+    ModelAndView modelAndView = controlador.verHorarios(null, requestMock);
 
     assertThat(modelAndView.getViewName(), equalTo("horarios"));
     assertThat(modelAndView.getModel().get("clasesPorDia"), equalTo(semana));
@@ -158,7 +163,7 @@ public class ControladorClaseTest {
     Map<LocalDate, List<Clase>> semana = new LinkedHashMap<>();
     when(servicioMock.listarSemana(CapacidadFisica.CARDIO)).thenReturn(semana);
 
-    ModelAndView modelAndView = controlador.verHorarios("CARDIO");
+    ModelAndView modelAndView = controlador.verHorarios("CARDIO", requestMock);
 
     verify(servicioMock).listarSemana(CapacidadFisica.CARDIO);
     assertThat(
@@ -192,5 +197,37 @@ public class ControladorClaseTest {
     datos.setCupo(15);
     datos.setCapacidad(CapacidadFisica.CARDIO);
     return datos;
+  }
+
+  @Test
+  public void deberiaVolverAlFormularioSiLaClaseEstaSuperpuesta() throws Exception {
+    dadoQueSoy("ENTRENADOR", 1L);
+    DatosClase datos = dadoQueTengoLosDatosDeUnaClase();
+    doThrow(new ClaseSuperpuesta()).when(servicioMock).crear(any(Clase.class), eq(1L));
+
+    ModelAndView modelAndView = controlador.guardarClase(datos, requestMock);
+
+    assertThat(modelAndView.getViewName(), equalTo("nueva-clase"));
+    assertThat(
+      modelAndView.getModel().get("error"),
+      equalTo("Ya tenés una clase asignada que se superpone con este horario")
+    );
+    assertThat(modelAndView.getModel().get("datosClase"), equalTo(datos));
+  }
+
+  @Test
+  public void deberiaVolverAlFormularioSiElLugarEstaOcupado() throws Exception {
+    dadoQueSoy("ENTRENADOR", 1L);
+    DatosClase datos = dadoQueTengoLosDatosDeUnaClase();
+    doThrow(new LugarOcupado()).when(servicioMock).crear(any(Clase.class), eq(1L));
+
+    ModelAndView modelAndView = controlador.guardarClase(datos, requestMock);
+
+    assertThat(modelAndView.getViewName(), equalTo("nueva-clase"));
+    assertThat(
+      modelAndView.getModel().get("error"),
+      equalTo("El lugar ya se encuentra ocupado en ese horario por otra clase")
+    );
+    assertThat(modelAndView.getModel().get("datosClase"), equalTo(datos));
   }
 }

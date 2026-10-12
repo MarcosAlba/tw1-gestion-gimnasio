@@ -7,8 +7,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.tallerwebi.dominio.enums.CapacidadFisica;
+import com.tallerwebi.dominio.excepcion.ClaseSuperpuesta;
 import com.tallerwebi.dominio.excepcion.EntrenadorInvalido;
 import com.tallerwebi.dominio.excepcion.FechaClaseInvalida;
+import com.tallerwebi.dominio.excepcion.LugarOcupado;
 import com.tallerwebi.dominio.interfaces.RepositorioClase;
 import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
 import com.tallerwebi.dominio.interfaces.ServicioClase;
@@ -152,5 +154,69 @@ public class ServicioClaseTest {
     clase.setInicio(inicio);
     clase.setCapacidad(capacidad);
     return clase;
+  }
+
+  @Test
+  public void noDeberiaCrearClaseSiSeSuperponeConOtraDelMismoEntrenador() {
+    LocalDate hoy = LocalDate.now().plusDays(1);
+    dadoQueExisteUnUsuarioConRol(1L, "ENTRENADOR");
+
+    Clase existente = new Clase();
+    existente.setInicio(hoy.atTime(10, 0));
+    existente.setDuracion(60); // De 10:00 a 11:00
+
+    Clase superpuesta = new Clase();
+    superpuesta.setInicio(hoy.atTime(10, 30)); // Inicia a mitad de la anterior
+    superpuesta.setDuracion(45);
+
+    when(repoClaseMock.buscarPorEntrenadorYFecha(1L, hoy)).thenReturn(List.of(existente));
+
+    assertThrows(ClaseSuperpuesta.class, () -> servicio.crear(superpuesta, 1L));
+    verify(repoClaseMock, never()).guardar(superpuesta);
+  }
+
+  @Test
+  public void noDeberiaCrearClaseSiElLugarYaEstaOcupado() {
+    LocalDate fecha = LocalDate.now().plusDays(1);
+    dadoQueExisteUnUsuarioConRol(1L, "ENTRENADOR");
+
+    Clase existente = new Clase();
+    existente.setLugar("Sala 1");
+    existente.setInicio(fecha.atTime(15, 0));
+    existente.setDuracion(60); // 15:00 a 16:00
+
+    Clase nuevaEnMismoLugar = new Clase();
+    nuevaEnMismoLugar.setLugar("Sala 1");
+    nuevaEnMismoLugar.setInicio(fecha.atTime(15, 30)); // Se solapa
+    nuevaEnMismoLugar.setDuracion(60);
+
+    when(repoClaseMock.buscarPorEntrenadorYFecha(1L, fecha)).thenReturn(List.of());
+    when(repoClaseMock.buscarPorLugarYFecha("Sala 1", fecha)).thenReturn(List.of(existente));
+
+    assertThrows(LugarOcupado.class, () -> servicio.crear(nuevaEnMismoLugar, 1L));
+    verify(repoClaseMock, never()).guardar(nuevaEnMismoLugar);
+  }
+
+  @Test
+  public void deberiaCrearClaseSiMismoLugarTieneHorarioDistinto() throws Exception {
+    LocalDate fecha = LocalDate.now().plusDays(1);
+    dadoQueExisteUnUsuarioConRol(1L, "ENTRENADOR");
+
+    Clase existente = new Clase();
+    existente.setLugar("Sala 1");
+    existente.setInicio(fecha.atTime(10, 0));
+    existente.setDuracion(60); // 10:00 a 11:00
+
+    Clase nuevaPosterior = new Clase();
+    nuevaPosterior.setLugar("Sala 1");
+    nuevaPosterior.setInicio(fecha.atTime(11, 0)); // Comienza justo al terminar la otra
+    nuevaPosterior.setDuracion(60);
+
+    when(repoClaseMock.buscarPorEntrenadorYFecha(1L, fecha)).thenReturn(List.of());
+    when(repoClaseMock.buscarPorLugarYFecha("Sala 1", fecha)).thenReturn(List.of(existente));
+
+    servicio.crear(nuevaPosterior, 1L);
+
+    verify(repoClaseMock, times(1)).guardar(nuevaPosterior);
   }
 }

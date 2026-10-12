@@ -17,6 +17,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 public class ControladorReservaTest {
 
@@ -61,7 +62,12 @@ public class ControladorReservaTest {
   public void deberiaReservarYRedirigirAMisReservas() throws Exception {
     dadoQueSoy("SOCIO", 1L);
 
-    ModelAndView modelAndView = controlador.reservar(5L, requestMock);
+    ModelAndView modelAndView = controlador.reservar(
+      5L,
+      null,
+      requestMock,
+      mock(RedirectAttributes.class)
+    );
 
     assertThat(modelAndView.getViewName(), equalTo("redirect:/reservas"));
     verify(servicioMock, times(1)).reservar(1L, 5L);
@@ -72,7 +78,12 @@ public class ControladorReservaTest {
     dadoQueSoy("SOCIO", 1L);
     doThrow(new MembresiaNoVigente()).when(servicioMock).reservar(1L, 5L);
 
-    ModelAndView modelAndView = controlador.reservar(5L, requestMock);
+    ModelAndView modelAndView = controlador.reservar(
+      5L,
+      null,
+      requestMock,
+      mock(RedirectAttributes.class)
+    );
 
     assertThat(modelAndView.getViewName(), equalTo("reservas"));
     assertThat(modelAndView.getModel().get("error"), equalTo("No tenés una membresía vigente"));
@@ -83,7 +94,12 @@ public class ControladorReservaTest {
     dadoQueSoy("SOCIO", 1L);
     doThrow(new ReservaDuplicada()).when(servicioMock).reservar(1L, 5L);
 
-    ModelAndView modelAndView = controlador.reservar(5L, requestMock);
+    ModelAndView modelAndView = controlador.reservar(
+      5L,
+      null,
+      requestMock,
+      mock(RedirectAttributes.class)
+    );
 
     assertThat(modelAndView.getViewName(), equalTo("reservas"));
     assertThat(
@@ -97,7 +113,12 @@ public class ControladorReservaTest {
     dadoQueSoy("SOCIO", 1L);
     doThrow(new ClaseNoEncontrada()).when(servicioMock).reservar(1L, 5L);
 
-    ModelAndView modelAndView = controlador.reservar(5L, requestMock);
+    ModelAndView modelAndView = controlador.reservar(
+      5L,
+      null,
+      requestMock,
+      mock(RedirectAttributes.class)
+    );
 
     assertThat(modelAndView.getViewName(), equalTo("reservas"));
     assertThat(modelAndView.getModel().get("error"), equalTo("La clase no existe"));
@@ -107,7 +128,12 @@ public class ControladorReservaTest {
   public void noDeberiaReservarSiNoEsSocio() throws Exception {
     dadoQueSoy("ENTRENADOR", 2L);
 
-    ModelAndView modelAndView = controlador.reservar(5L, requestMock);
+    ModelAndView modelAndView = controlador.reservar(
+      5L,
+      null,
+      requestMock,
+      mock(RedirectAttributes.class)
+    );
 
     assertThat(modelAndView.getViewName(), equalTo("redirect:/login"));
     verify(servicioMock, never()).reservar(any(), any());
@@ -147,5 +173,30 @@ public class ControladorReservaTest {
   private void dadoQueSoy(String rol, Long id) {
     when(sessionMock.getAttribute("ROL")).thenReturn(rol);
     when(sessionMock.getAttribute("ID_USUARIO")).thenReturn(id);
+  }
+
+  @Test
+  public void deberiaReservarDesdeHorariosYRedirigirAHorariosConMensajeExitoso() throws Exception {
+    dadoQueSoy("SOCIO", 1L);
+    RedirectAttributes redirectAttrs = mock(RedirectAttributes.class);
+
+    ModelAndView modelAndView = controlador.reservar(5L, "horarios", requestMock, redirectAttrs);
+
+    assertThat(modelAndView.getViewName(), equalTo("redirect:/horarios"));
+    verify(servicioMock, times(1)).reservar(1L, 5L);
+    verify(redirectAttrs, times(1)).addFlashAttribute(eq("exito"), anyString());
+  }
+
+  @Test
+  public void deberiaRedirigirAHorariosConFlashAttributeCuandoFallaPorMembresia() throws Exception {
+    dadoQueSoy("SOCIO", 1L);
+    RedirectAttributes redirectAttrs = mock(RedirectAttributes.class);
+    doThrow(new MembresiaNoVigente()).when(servicioMock).reservar(1L, 5L);
+
+    ModelAndView modelAndView = controlador.reservar(5L, "horarios", requestMock, redirectAttrs);
+
+    assertThat(modelAndView.getViewName(), equalTo("redirect:/horarios"));
+    verify(redirectAttrs, times(1))
+      .addFlashAttribute(eq("error"), eq("No tenés una membresía vigente"));
   }
 }
