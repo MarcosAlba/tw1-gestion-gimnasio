@@ -15,6 +15,7 @@ public class ReiniciarDB {
         : "user";
 
       String sqlCommands =
+        "DELETE FROM ItemRutina;\n" +
         "DELETE FROM rutina_ejercicio;\n" +
         "DELETE FROM Rutina;\n" +
         "DELETE FROM Reserva;\n" +

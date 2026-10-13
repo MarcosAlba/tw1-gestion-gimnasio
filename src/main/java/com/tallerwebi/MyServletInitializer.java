@@ -3,8 +3,10 @@ package com.tallerwebi;
 import com.tallerwebi.config.DatabaseInitializationConfig;
 import com.tallerwebi.config.HibernateConfig;
 import com.tallerwebi.config.SpringWebConfig;
+import jakarta.servlet.Filter;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletRegistration;
+import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 public class MyServletInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
@@ -34,5 +36,14 @@ public class MyServletInitializer extends AbstractAnnotationConfigDispatcherServ
   @Override
   protected void customizeRegistration(ServletRegistration.Dynamic registration) {
     registration.setMultipartConfig(new MultipartConfigElement("", 5_000_000L, 6_000_000L, 0));
+  }
+
+  //el filtro se asegura de que lo desempaquete sin corromper las tildes ni las ñ.
+  @Override
+  protected Filter[] getServletFilters() {
+    CharacterEncodingFilter encodingFilter = new CharacterEncodingFilter();
+    encodingFilter.setEncoding("UTF-8");
+    encodingFilter.setForceEncoding(true);
+    return new Filter[] { encodingFilter };
   }
 }
