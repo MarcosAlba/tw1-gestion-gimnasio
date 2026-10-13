@@ -3,6 +3,8 @@ package com.tallerwebi.infraestructura;
 import com.tallerwebi.dominio.Usuario;
 import com.tallerwebi.dominio.excepcion.UsuarioNoEncontrado;
 import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
+import java.util.List;
+import java.util.Locale;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -57,5 +59,22 @@ public class RepositorioUsuarioImpl implements RepositorioUsuario {
   @Override
   public Usuario buscarPorId(Long id) {
     return sessionFactory.getCurrentSession().get(Usuario.class, id);
+  }
+
+  @Override
+  public List<Usuario> buscarSocios(String criterio) {
+    if (criterio == null || criterio.isBlank()) {
+      String hql = "FROM Usuario WHERE rol = 'SOCIO' ORDER BY nombre ASC";
+      return sessionFactory.getCurrentSession().createQuery(hql, Usuario.class).getResultList();
+    }
+
+    String filtro = "%" + criterio.trim().toLowerCase(Locale.ROOT) + "%";
+    String hql =
+      "FROM Usuario WHERE rol = 'SOCIO' AND (LOWER(nombre) LIKE :filtro OR LOWER(apellido) LIKE :filtro OR LOWER(email) LIKE :filtro) ORDER BY nombre ASC";
+    return sessionFactory
+      .getCurrentSession()
+      .createQuery(hql, Usuario.class)
+      .setParameter("filtro", filtro)
+      .getResultList();
   }
 }

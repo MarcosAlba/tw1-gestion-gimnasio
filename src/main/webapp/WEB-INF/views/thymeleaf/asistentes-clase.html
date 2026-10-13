@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: cabecera('Inscriptos a la clase')}"></head>
+<body>
+<nav th:replace="~{fragmentos :: barra('clases')}"></nav>
+<main role="main" class="pagina" style="max-width: 68rem;">
+    <header class="pagina-cabecera">
+        <div>
+            <h1 th:text="'Inscriptos: ' + ${clase.nombre}">Inscriptos: Spinning</h1>
+            <p>
+                <span th:text="${#temporals.format(clase.inicio, 'dd/MM/yyyy HH:mm')}">01/01/2026 18:00</span>
+                • Lugar: <strong th:text="${clase.lugar}">Sala 1</strong>
+                • Cupos restantes: <strong th:text="${clase.cupo}">5</strong>
+            </p>
+        </div>
+        <a th:href="@{/clases}" class="btn btn-outline-dark">Volver a clases</a>
+    </header>
+
+    <!-- Bloque 1: Confirmados -->
+    <h4 class="mt-4 mb-2 text-success">Lugares Confirmados</h4>
+    <div class="tabla-responsive mb-4">
+        <table class="tabla">
+            <thead>
+            <tr>
+                <th>Socio</th>
+                <th>Email</th>
+                <th>Deporte</th>
+                <th>Fecha Reserva</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${inscriptos}" th:if="${r.estado.name() == 'CONFIRMADA'}">
+                <td>
+                    <strong th:text="${r.socio.nombre != null ? r.socio.nombre + ' ' + r.socio.apellido : 'Sin nombre'}">Nombre</strong>
+                </td>
+                <td th:text="${r.socio.email}">email@unlam.edu.ar</td>
+                <td th:text="${r.socio.deporte != null ? r.socio.deporte : '-'}">Tenis</td>
+                <td th:text="${#temporals.format(r.fechaReserva, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(inscriptos.?[estado.name() == 'CONFIRMADA'])}">
+                <td colspan="4" class="text-muted text-center">No hay confirmados aún.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bloque 2: Lista de espera con posición -->
+    <h4 class="mt-4 mb-2 text-warning">Lista de Espera</h4>
+    <div class="tabla-responsive mb-4">
+        <table class="tabla">
+            <thead>
+            <tr>
+                <th>Orden</th>
+                <th>Socio</th>
+                <th>Email</th>
+                <th>Fecha Solicitud</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r, iter : ${inscriptos}" th:if="${r.estado.name() == 'EN_ESPERA'}">
+                <td><span class="badge bg-warning text-dark" th:text="'#' + ${iter.count}">#1</span></td>
+                <td th:text="${r.socio.nombre != null ? r.socio.nombre + ' ' + r.socio.apellido : r.socio.email}">Nombre</td>
+                <td th:text="${r.socio.email}">email@unlam.edu.ar</td>
+                <td th:text="${#temporals.format(r.fechaReserva, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(inscriptos.?[estado.name() == 'EN_ESPERA'])}">
+                <td colspan="4" class="text-muted text-center">No hay alumnos en espera.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p th:if="${#lists.isEmpty(inscriptos)}" class="vacio">
+        Todavía no hay socios inscriptos para esta clase.
+    </p>
+</main>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

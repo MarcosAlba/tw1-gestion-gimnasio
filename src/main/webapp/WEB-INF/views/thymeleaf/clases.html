@@ -5,60 +5,74 @@
 
 <body>
 
-  <nav th:replace="~{fragmentos :: barra('clases')}"></nav>
+<nav th:replace="~{fragmentos :: barra('clases')}"></nav>
 
-  <main role="main" class="pagina">
+<main role="main" class="pagina">
     <header class="pagina-cabecera">
-      <div>
-        <h1>Próximas clases</h1>
-        <p th:if="${session.ROL == 'SOCIO'}">Elegí una clase y reservá tu lugar. Necesitás una membresía vigente. Si la clase está completa, quedás en lista de espera.</p>
-        <p th:if="${session.ROL != 'SOCIO'}">Clases programadas, ordenadas por horario de inicio.</p>
-      </div>
-      <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}" class="btn btn-primary">Nueva clase</a>
+        <div>
+            <h1>Próximas clases</h1>
+            <p th:if="${session.ROL == 'SOCIO'}">Elegí una clase y reservá tu lugar. Necesitás una membresía vigente. Si la clase está completa, quedás en lista de espera.</p>
+            <p th:if="${session.ROL != 'SOCIO'}">Clases programadas, ordenadas por horario de inicio.</p>
+        </div>
+        <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}" class="btn btn-primary">Nueva clase</a>
     </header>
 
     <div class="tabla-responsive" th:unless="${#lists.isEmpty(clases)}">
-      <table class="tabla">
-        <thead>
-          <tr>
-            <th>Clase</th>
-            <th>Inicio</th>
-            <th class="d-none d-md-table-cell">Duración</th>
-            <th class="d-none d-md-table-cell">Lugar</th>
-            <th>Capacidad</th>
-            <th class="numero d-none d-md-table-cell">Cupo</th>
-            <th th:if="${session.ROL == 'SOCIO'}"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:each="c : ${clases}">
-            <td>
-              <span class="principal" th:text="${c.nombre}">Spinning</span>
-              <span class="secundario" th:text="${c.entrenador.nombre != null ? c.entrenador.nombre + ' ' + c.entrenador.apellido : c.entrenador.email}">Entrenador</span>
-            </td>
-            <td th:text="${#temporals.format(c.inicio, 'dd/MM/yyyy HH:mm')}">01/01/2026 18:00</td>
-            <td class="d-none d-md-table-cell" th:text="${c.duracion} + ' min'">45 min</td>
-            <td class="d-none d-md-table-cell" th:text="${c.lugar}">Sala 1</td>
-            <td><th:block th:replace="~{fragmentos :: capacidad(${c.capacidad})}"></th:block></td>
-            <td class="numero d-none d-md-table-cell" th:text="${c.cupo}">10</td>
-            <td class="accion" th:if="${session.ROL == 'SOCIO'}">
-              <form th:action="@{/reservas/reservar}" method="POST">
-                <input type="hidden" name="claseId" th:value="${c.id}" />
-                <button class="btn btn-sm btn-primary" type="submit">Reservar</button>
-              </form>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <table class="tabla">
+            <thead>
+            <tr>
+                <th>Clase</th>
+                <th>Inicio</th>
+                <th class="d-none d-md-table-cell">Duración</th>
+                <th class="d-none d-md-table-cell">Lugar</th>
+                <th>Capacidad</th>
+                <th class="numero d-none d-md-table-cell">Cupo</th>
+                <th th:if="${session.ROL == 'SOCIO'}"></th>
+                <!-- Columna para la acción del entrenador -->
+                <th th:if="${session.ROL == 'ENTRENADOR'}"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${clases}">
+                <td>
+                    <span class="principal" th:text="${c.nombre}">Spinning</span>
+                    <span class="secundario" th:text="${c.entrenador.nombre != null ? c.entrenador.nombre + ' ' + c.entrenador.apellido : c.entrenador.email}">Entrenador</span>
+                </td>
+                <td th:text="${#temporals.format(c.inicio, 'dd/MM/yyyy HH:mm')}">01/01/2026 18:00</td>
+                <td class="d-none d-md-table-cell" th:text="${c.duracion} + ' min'">45 min</td>
+                <td class="d-none d-md-table-cell" th:text="${c.lugar}">Sala 1</td>
+                <td><th:block th:replace="~{fragmentos :: capacidad(${c.capacidad})}"></th:block></td>
+                <td class="numero d-none d-md-table-cell" th:text="${c.cupo}">10</td>
+                <td class="accion" th:if="${session.ROL == 'SOCIO'}">
+                    <form th:action="@{/reservas/reservar}" method="POST">
+                        <input type="hidden" name="claseId" th:value="${c.id}" />
+                        <button class="btn btn-sm btn-primary" type="submit">Reservar</button>
+                    </form>
+                </td>
+                <!-- Botón para ver alumnos (solo si el entrenador logueado es el dueño de la clase) -->
+                <td class="accion" th:if="${session.ROL == 'ENTRENADOR'}">
+                    <div class="d-flex gap-1" th:if="${c.entrenador != null and c.entrenador.id == session.ID_USUARIO}">
+                        <a th:href="@{'/clases/' + ${c.id} + '/asistentes'}" class="btn btn-sm btn-outline-primary">
+                            Ver alumnos
+                        </a>
+                        <form th:action="@{'/clases/' + ${c.id} + '/cancelar'}" method="POST"
+                              onsubmit="return confirm('¿Seguro que deseas cancelar esta clase?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancelar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 
     <p th:if="${#lists.isEmpty(clases)}" class="vacio">
-      No hay clases programadas.
-      <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}">Creá la primera.</a>
+        No hay clases programadas.
+        <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}">Creá la primera.</a>
     </p>
-  </main>
+</main>
 
-  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
 
 </body>
 

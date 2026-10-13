@@ -11,4 +11,5 @@ public interface RepositorioReserva {
   boolean existeActiva(Long socioId, Long claseId);
   Reserva buscarPorId(Long id);
   Reserva buscarPrimeraEnEspera(Long claseId);
+  List<Reserva> buscarPorClase(Long idClase);
 }

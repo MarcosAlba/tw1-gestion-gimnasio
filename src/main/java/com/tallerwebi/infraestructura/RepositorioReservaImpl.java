@@ -87,4 +87,14 @@ public class RepositorioReservaImpl implements RepositorioReserva {
       .setMaxResults(1)
       .uniqueResult();
   }
+
+  @Override
+  public List<Reserva> buscarPorClase(Long idClase) {
+    String hql = "FROM Reserva WHERE clase.id = :idClase ORDER BY estado ASC, fechaReserva ASC";
+    return sessionFactory
+      .getCurrentSession()
+      .createQuery(hql, Reserva.class)
+      .setParameter("idClase", idClase)
+      .getResultList();
+  }
 }

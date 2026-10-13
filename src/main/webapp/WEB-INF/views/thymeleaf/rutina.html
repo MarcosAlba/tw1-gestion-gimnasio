@@ -1,58 +1,74 @@
 <!DOCTYPE HTML>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-
 <head th:replace="~{fragmentos :: cabecera('Mi rutina')}"></head>
+<body class="bg-light">
+<nav th:replace="~{fragmentos :: barra('rutina')}"></nav>
 
-<body>
-
-  <nav th:replace="~{fragmentos :: barra('rutina')}"></nav>
-
-  <main role="main" class="pagina">
-    <header class="pagina-cabecera">
-      <div>
-        <h1>Mi rutina</h1>
-        <p>Los ejercicios se eligen según tu deporte. Cada vez que generás una rutina nueva, la anterior queda en el historial.</p>
-      </div>
-      <form th:action="@{/rutina/generar}" method="POST">
-        <button class="btn btn-primary" type="submit">Generar nueva rutina</button>
-      </form>
+<main role="main" class="container py-5" style="max-width: 1000px;">
+    <header class="mb-5 text-center">
+        <h1 class="fw-bolder text-dark display-5">Mi Plan de Entrenamiento </h1>
+        <p class="text-muted fs-5">Tu rutina semanal asignada. ¡No olvides registrar tu peso real al terminar!</p>
     </header>
 
-    <p th:if="${error != null}" class="alert alert-danger" th:text="${error}"></p>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="col" th:each="entry : ${rutinaPorDias}" th:unless="${#lists.isEmpty(entry.value)}">
+            <div class="card h-100 shadow-sm border-0 rounded-4">
+                <div class="card-header bg-primary text-white fw-bold text-center py-3 fs-5 rounded-top-4">
+                     <span th:text="${entry.key.etiqueta}">Lunes</span>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush rounded-bottom-4">
+                        <li class="list-group-item p-4 border-bottom" th:each="item : ${entry.value}" th:classappend="${item.detalle.completado} ? 'bg-success bg-opacity-10' : ''">
 
-    <div th:if="${rutina != null}">
-      <p class="meta">
-        <span>Deporte: <strong th:text="${#strings.capitalize(#strings.toLowerCase(rutina.deporte))}">Tenis</strong></span>
-        <span>Generada el <strong th:text="${#temporals.format(rutina.fechaCreacion, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</strong></span>
-      </p>
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="mb-0 fw-bold text-dark" th:text="${item.nombreEjercicio}">Press de banca</h5>
+                            </div>
 
-      <div class="tabla-responsive">
-        <table class="tabla">
-          <thead>
-            <tr>
-              <th>Ejercicio</th>
-              <th>Capacidad</th>
-              <th>Dificultad</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="e : ${rutina.ejercicios}">
-              <td class="principal" th:text="${e.nombre}">Sentadilla</td>
-              <td><th:block th:replace="~{fragmentos :: capacidad(${e.capacidad})}"></th:block></td>
-              <td><th:block th:replace="~{fragmentos :: dificultad(${e.dificultad})}"></th:block></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="badge bg-dark fs-6 rounded-pill px-3" th:text="${item.detalle.series} + ' Series x ' + ${item.detalle.repeticiones} + ' Reps'">4 x 10</span>
+                                <span class="badge bg-warning text-dark fs-6 rounded-pill px-3" th:if="${item.detalle.pesoKg != null}" th:text="'🎯 Meta: ' + ${item.detalle.pesoKg} + ' kg'">20 kg</span>
+                            </div>
+
+                            <p class="text-muted mb-3 bg-light p-2 rounded border-start border-3 border-primary" th:if="${item.detalle.observaciones != null and !#strings.isEmpty(item.detalle.observaciones)}" th:text="'💡 ' + ${item.detalle.observaciones}">Descanso 1 min</p>
+
+                            <a th:if="${item.slugEjercicio != null and !#strings.isEmpty(item.slugEjercicio)}"
+                               th:href="@{'/catalogo/' + ${item.slugEjercicio}}"
+                               target="_blank"
+                               class="btn btn-sm btn-outline-info w-100 fw-bold mb-3 rounded-pill">
+                                Ver demostración técnica
+                            </a>
+
+                            <!-- Check-in / Registro de avance -->
+                            <div class="mt-2 pt-3 border-top">
+                                <div th:if="${item.detalle.completado}" class="text-success text-center bg-white p-2 rounded shadow-sm border border-success">
+                                    <span class="fw-bold fs-5"> ¡Completado!</span><br>
+                                    <span th:if="${item.detalle.pesoLevantadoKg != null}" class="text-muted" th:text="'Lograste ' + ${item.detalle.pesoLevantadoKg} + ' kg'"></span>
+                                </div>
+
+                                <form th:unless="${item.detalle.completado}" th:action="@{'/rutina/item/' + ${item.id} + '/checkin'}" method="POST" accept-charset="UTF-8">
+                                    <div class="input-group input-group-sm shadow-sm">
+                                        <span class="input-group-text bg-white">Peso real:</span>
+                                        <input type="number" step="0.5" min="0" name="pesoReal" class="form-control" placeholder="Ej: 22.5" />
+                                        <button type="submit" class="btn btn-success fw-bold px-3">Marcar Hecho</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <p th:if="${rutina == null and error == null}" class="vacio">
-      Todavía no generaste ninguna rutina. Usá el botón de arriba para armar la primera.
-    </p>
-  </main>
+    <!-- Si no tiene rutina -->
+    <div th:if="${#maps.isEmpty(rutinaPorDias) or #lists.isEmpty(rutinaPorDias.values().?[!isEmpty()])}" class="text-center p-5 bg-white rounded-4 shadow mt-4">
+        <h3 class="text-muted fw-bold mb-3">Aún no tienes plan </h3>
+        <p class="fs-5 mb-4">Todavía no tenés una rutina armada por tu entrenador.</p>
+        <a th:href="@{/catalogo}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">Explorar el catálogo mientras tanto</a>
+    </div>
+</main>
 
-  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
-
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
 </body>
-
 </html>

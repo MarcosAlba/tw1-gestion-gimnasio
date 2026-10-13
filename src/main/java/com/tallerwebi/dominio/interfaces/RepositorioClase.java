@@ -12,4 +12,5 @@ public interface RepositorioClase {
   List<Clase> buscarDesde(LocalDateTime desde);
   List<Clase> buscarPorEntrenadorYFecha(Long idEntrenador, LocalDate fecha);
   List<Clase> buscarPorLugarYFecha(String lugar, LocalDate fecha);
+  void eliminar(Clase clase);
 }

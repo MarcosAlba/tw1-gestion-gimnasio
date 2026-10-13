@@ -1,0 +1,60 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: cabecera('Buscar Socios')}"></head>
+<body class="bg-light">
+<nav th:replace="~{fragmentos :: barra('socios')}"></nav>
+
+<main role="main" class="container py-5" style="max-width: 1000px;">
+    <header class="mb-4 text-center">
+        <h1 class="fw-bold">Socios del Gimnasio</h1>
+        <p class="text-muted">Buscá un socio para revisar su entrenamiento o armarle una rutina personalizada.</p>
+    </header>
+
+    <form th:action="@{/socios}" method="GET" class="card shadow-sm border-0 p-4 mb-5 mx-auto">
+        <div class="row g-2">
+            <div class="col-md-9">
+                <input type="text" name="buscar" class="form-control"
+                       placeholder="Buscar por nombre, apellido o email..." th:value="${filtroBuscar}">
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">Buscar</button>
+                <a th:href="@{/socios}" class="btn btn-outline-secondary">Limpiar</a>
+            </div>
+        </div>
+    </form>
+
+    <div class="card shadow-sm border-0" th:unless="${#lists.isEmpty(socios)}">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Nombre y Apellido</th>
+                    <th>Email</th>
+                    <th>Deporte</th>
+                    <th class="text-end pe-4">Acción</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${socios}">
+                    <td class="ps-4 fw-bold text-dark" th:text="${s.nombre != null ? s.nombre + ' ' + s.apellido : 'Sin completar'}">Juan Pérez</td>
+                    <td class="text-muted" th:text="${s.email}">socio@unlam.edu.ar</td>
+                    <td><span class="badge bg-secondary" th:text="${s.deporte != null ? #strings.capitalize(#strings.toLowerCase(s.deporte)) : '-'}">Fútbol</span></td>
+                    <td class="text-end pe-4">
+                        <a th:href="@{'/socios/' + ${s.id} + '/rutina'}" class="btn btn-sm btn-dark">
+                            Asignar / Ver Rutina
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(socios)}" class="text-center p-5 bg-white rounded shadow-sm">
+        <p class="text-muted mb-0">No se encontraron socios con ese criterio.</p>
+    </div>
+</main>
+
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

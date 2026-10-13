@@ -55,6 +55,9 @@
         <li th:if="${session.ROL == 'ENTRENADOR' or session.ROL == 'SOCIO'}">
             <a th:href="@{/catalogo}" th:aria-current="${activo == 'catalogo'} ? 'page'">Lista de Ejercicios</a>
         </li>
+        <li th:if="${session.ROL == 'ENTRENADOR'}">
+            <a th:href="@{/socios}" th:aria-current="${activo == 'socios'} ? 'page'">Socios</a>
+        </li>
       <li>
         <a th:href="@{/perfil}" th:aria-current="${activo == 'perfil'} ? 'page'">Mi perfil</a>
       </li>

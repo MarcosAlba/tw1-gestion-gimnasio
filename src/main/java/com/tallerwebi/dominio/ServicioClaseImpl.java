@@ -1,22 +1,16 @@
 package com.tallerwebi.dominio;
 
 import com.tallerwebi.dominio.enums.CapacidadFisica;
-import com.tallerwebi.dominio.excepcion.ClaseSuperpuesta;
-import com.tallerwebi.dominio.excepcion.EntrenadorInvalido;
-import com.tallerwebi.dominio.excepcion.FechaClaseInvalida;
-import com.tallerwebi.dominio.excepcion.LugarOcupado;
+import com.tallerwebi.dominio.enums.EstadoReserva;
+import com.tallerwebi.dominio.excepcion.*;
 import com.tallerwebi.dominio.interfaces.RepositorioClase;
+import com.tallerwebi.dominio.interfaces.RepositorioReserva;
 import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
 import com.tallerwebi.dominio.interfaces.ServicioClase;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,19 +20,25 @@ public class ServicioClaseImpl implements ServicioClase {
 
   private static final int DIAS_DE_LA_SEMANA = 7;
 
-  private RepositorioClase repoClase;
-  private RepositorioUsuario repoUsuario;
+  private final RepositorioClase repositorioClase;
+  private final RepositorioUsuario repositorioUsuario;
+  private final RepositorioReserva repositorioReserva;
 
   @Autowired
-  public ServicioClaseImpl(RepositorioClase repoClase, RepositorioUsuario repoUsuario) {
-    this.repoClase = repoClase;
-    this.repoUsuario = repoUsuario;
+  public ServicioClaseImpl(
+    RepositorioClase repositorioClase,
+    RepositorioUsuario repositorioUsuario,
+    RepositorioReserva repositorioReserva
+  ) {
+    this.repositorioClase = repositorioClase;
+    this.repositorioUsuario = repositorioUsuario;
+    this.repositorioReserva = repositorioReserva;
   }
 
   @Override
   public void crear(Clase clase, Long idEntrenador)
     throws EntrenadorInvalido, FechaClaseInvalida, ClaseSuperpuesta, LugarOcupado {
-    Usuario entrenador = repoUsuario.buscarPorId(idEntrenador);
+    Usuario entrenador = repositorioUsuario.buscarPorId(idEntrenador);
     if (entrenador == null || !"ENTRENADOR".equalsIgnoreCase(entrenador.getRol())) {
       throw new EntrenadorInvalido();
     }
@@ -55,13 +55,13 @@ public class ServicioClaseImpl implements ServicioClase {
     validarDisponibilidadLugar(clase);
 
     clase.setEntrenador(entrenador);
-    repoClase.guardar(clase);
+    repositorioClase.guardar(clase);
   }
 
   private void validarDisponibilidadEntrenador(Clase clase, Long idEntrenador)
     throws ClaseSuperpuesta {
     LocalDate dia = clase.getInicio().toLocalDate();
-    List<Clase> clasesEntrenador = repoClase.buscarPorEntrenadorYFecha(idEntrenador, dia);
+    List<Clase> clasesEntrenador = repositorioClase.buscarPorEntrenadorYFecha(idEntrenador, dia);
 
     if (haySolapamiento(clase, clasesEntrenador)) {
       throw new ClaseSuperpuesta();
@@ -70,7 +70,7 @@ public class ServicioClaseImpl implements ServicioClase {
 
   private void validarDisponibilidadLugar(Clase clase) throws LugarOcupado {
     LocalDate dia = clase.getInicio().toLocalDate();
-    List<Clase> clasesLugar = repoClase.buscarPorLugarYFecha(clase.getLugar(), dia);
+    List<Clase> clasesLugar = repositorioClase.buscarPorLugarYFecha(clase.getLugar(), dia);
 
     if (haySolapamiento(clase, clasesLugar)) {
       throw new LugarOcupado();
@@ -95,30 +95,92 @@ public class ServicioClaseImpl implements ServicioClase {
 
   @Override
   public List<Clase> listarProximas() {
-    return repoClase.buscarDesde(LocalDateTime.now());
+    return repositorioClase.buscarDesde(LocalDateTime.now());
   }
 
   @Override
-  public Map<LocalDate, List<Clase>> listarSemana(CapacidadFisica capacidad) {
+  public Map<LocalDate, List<Clase>> listarSemana(CapacidadFisica capacidad, String filtroTexto) {
     LocalDate hoy = LocalDate.now();
+    LocalDateTime inicioSemana = hoy.atStartOfDay();
+    List<Clase> clases = repositorioClase.buscarDesde(inicioSemana);
 
-    // Un día por columna, en orden de fecha y con la lista vacía si no hay clases
     Map<LocalDate, List<Clase>> semana = new LinkedHashMap<>();
-    for (int i = 0; i < DIAS_DE_LA_SEMANA; i++) {
+    for (int i = 0; i < 7; i++) {
       semana.put(hoy.plusDays(i), new ArrayList<>());
     }
 
-    for (Clase clase : repoClase.buscarDesde(hoy.atStartOfDay())) {
-      boolean coincideConElFiltro = capacidad == null || clase.getCapacidad() == capacidad;
-      List<Clase> delDia = semana.get(clase.getInicio().toLocalDate());
-      if (coincideConElFiltro && delDia != null) {
-        delDia.add(clase);
+    String texto = (filtroTexto != null) ? filtroTexto.trim().toLowerCase(Locale.ROOT) : "";
+
+    for (Clase clase : clases) {
+      LocalDate fechaClase = clase.getInicio().toLocalDate();
+      if (semana.containsKey(fechaClase)) {
+        boolean coincideCapacidad = (capacidad == null || clase.getCapacidad() == capacidad);
+
+        boolean coincideTexto =
+          texto.isEmpty() ||
+          (clase.getLugar() != null && clase.getLugar().toLowerCase(Locale.ROOT).contains(texto)) ||
+          (clase.getEntrenador() != null &&
+            clase.getEntrenador().getNombre() != null &&
+            clase.getEntrenador().getNombre().toLowerCase(Locale.ROOT).contains(texto));
+
+        if (coincideCapacidad && coincideTexto) {
+          semana.get(fechaClase).add(clase);
+        }
       }
     }
 
-    for (List<Clase> delDia : semana.values()) {
-      delDia.sort(Comparator.comparing(Clase::getInicio));
+    // Ordenar turnos por hora de inicio
+    for (List<Clase> listaTurnos : semana.values()) {
+      listaTurnos.sort((c1, c2) -> c1.getInicio().compareTo(c2.getInicio()));
     }
+
     return semana;
+  }
+
+  @Override
+  public Clase obtenerPorId(Long idClase) throws ClaseNoEncontrada {
+    Clase clase = repositorioClase.buscarPorId(idClase);
+    if (clase == null) {
+      throw new ClaseNoEncontrada();
+    }
+    return clase;
+  }
+
+  @Override
+  public List<Reserva> obtenerInscriptos(Long idClase, Long idEntrenador)
+    throws ClaseNoEncontrada, ClaseNoPermitida {
+    Clase clase = obtenerPorId(idClase);
+
+    // Validación: la clase debe pertenecer al entrenador logueado
+    if (clase.getEntrenador() == null || !clase.getEntrenador().getId().equals(idEntrenador)) {
+      throw new ClaseNoPermitida();
+    }
+
+    return repositorioReserva.buscarPorClase(idClase);
+  }
+
+  @Override
+  public void cancelarClase(Long idClase, Long idEntrenador)
+    throws ClaseNoEncontrada, ClaseNoPermitida {
+    Clase clase = repositorioClase.buscarPorId(idClase);
+    if (clase == null) {
+      throw new ClaseNoEncontrada();
+    }
+    if (clase.getEntrenador() == null || !clase.getEntrenador().getId().equals(idEntrenador)) {
+      throw new ClaseNoPermitida();
+    }
+
+    // Cancelar todas las reservas asociadas a esta clase
+    List<Reserva> reservas = repositorioReserva.buscarPorClase(idClase);
+    for (Reserva reserva : reservas) {
+      if (reserva.getEstado() != EstadoReserva.CANCELADA) {
+        reserva.setEstado(EstadoReserva.CANCELADA);
+        repositorioReserva.modificar(reserva);
+      }
+    }
+
+    // Se eliminan las reservas o se borra la clase según la regla que prefieras
+    // Para este caso eliminamos la clase cancelada:
+    repositorioClase.eliminar(clase);
   }
 }

@@ -1,116 +1,120 @@
 <!DOCTYPE HTML>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-
-<!--
-  Horarios de clases, pagina publica (no requiere sesion).
-  Modelo que espera del controlador:
-    clasesPorDia          Map<LocalDate, List<Clase>> en orden de fecha, con un dia por columna
-                          (los dias sin clases van con la lista vacia)
-    capacidadSeleccionada CapacidadFisica del filtro, o null si se ven todas
--->
-
 <head th:replace="~{fragmentos :: cabecera('Horarios')}"></head>
+<body class="bg-light">
+<nav th:replace="~{fragmentos :: barra('horarios')}"></nav>
 
-<body>
-
-  <nav th:replace="~{fragmentos :: barra('horarios')}"></nav>
-
-  <main role="main" class="horarios">
-
+<main role="main" class="horarios">
     <header class="horarios-cabecera">
-      <p class="portada-etiqueta">Gimnasio UNLAM</p>
-      <h1>Horarios de clases</h1>
-      <p class="portada-bajada">Elegí el tipo de clase y mirá cuándo se dicta. Para reservar lugar necesitás una cuenta y una membresía vigente.</p>
+        <p class="portada-etiqueta">Gimnasio UNLAM</p>
+        <h1>Horarios de clases</h1>
+        <p class="portada-bajada">Elegí el tipo de clase y mirá cuándo se dicta. Para reservar lugar necesitás una cuenta y membresía.</p>
 
-      <nav class="filtros" aria-label="Filtrar por tipo de clase">
-        <a class="filtro" th:href="@{/horarios}"
-           th:classappend="${capacidadSeleccionada == null} ? 'activo'"
-           th:aria-current="${capacidadSeleccionada == null} ? 'true'">Todas</a>
-        <a class="filtro filtro-fuerza" th:href="@{/horarios(capacidad=FUERZA)}"
-           th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'FUERZA'} ? 'activo'"
-           th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'FUERZA'} ? 'true'">Fuerza</a>
-        <a class="filtro filtro-agilidad" th:href="@{/horarios(capacidad=AGILIDAD)}"
-           th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'AGILIDAD'} ? 'activo'"
-           th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'AGILIDAD'} ? 'true'">Agilidad</a>
-        <a class="filtro filtro-cardio" th:href="@{/horarios(capacidad=CARDIO)}"
-           th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'CARDIO'} ? 'activo'"
-           th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'CARDIO'} ? 'true'">Cardio</a>
-        <a class="filtro filtro-coordinacion" th:href="@{/horarios(capacidad=COORDINACION)}"
-           th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'COORDINACION'} ? 'activo'"
-           th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'COORDINACION'} ? 'true'">Coordinación</a>
-      </nav>
+        <nav class="filtros" aria-label="Filtrar por tipo de clase">
+            <a class="filtro" th:href="@{/horarios}"
+               th:classappend="${capacidadSeleccionada == null} ? 'activo'"
+               th:aria-current="${capacidadSeleccionada == null} ? 'true'">Todas</a>
+            <a class="filtro filtro-fuerza" th:href="@{/horarios(capacidad=FUERZA)}"
+               th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'FUERZA'} ? 'activo'"
+               th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'FUERZA'} ? 'true'">Fuerza</a>
+            <a class="filtro filtro-agilidad" th:href="@{/horarios(capacidad=AGILIDAD)}"
+               th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'AGILIDAD'} ? 'activo'"
+               th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'AGILIDAD'} ? 'true'">Agilidad</a>
+            <a class="filtro filtro-cardio" th:href="@{/horarios(capacidad=CARDIO)}"
+               th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'CARDIO'} ? 'activo'"
+               th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'CARDIO'} ? 'true'">Cardio</a>
+            <a class="filtro filtro-coordinacion" th:href="@{/horarios(capacidad=COORDINACION)}"
+               th:classappend="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'COORDINACION'} ? 'activo'"
+               th:aria-current="${capacidadSeleccionada != null and capacidadSeleccionada.name() == 'COORDINACION'} ? 'true'">Coordinación</a>
+        </nav>
     </header>
-      <div th:if="${exito != null}" class="alert alert-success mt-3" th:text="${exito}"></div>
-      <div th:if="${error != null}" class="alert alert-danger mt-3" th:text="${error}"></div>
-    <section class="semana">
-        <div class="dia" th:each="dia : ${clasesPorDia}">
-            <h3>
-                <span th:text="${#temporals.dayOfWeekName(dia.key)}">Lunes</span>
-                <small th:text="${#temporals.format(dia.key, 'dd/MM')}">05/10</small>
-            </h3>
 
-            <!-- Botón accesible solo para el ENTRENADOR -->
-            <div th:if="${session.ROL == 'ENTRENADOR'}" class="mb-2 text-center">
-                <a class="btn btn-sm btn-outline-primary w-100"
-                   th:href="@{/clases/nueva(fecha=${#temporals.format(dia.key, 'yyyy-MM-dd')})}">
-                    + Clase
-                </a>
+    <div class="container pb-5">
+        <form th:action="@{/horarios}" method="GET" class="card shadow-sm border-0 p-3 mb-4 mx-auto" style="max-width: 600px;">
+            <div class="input-group">
+                <input type="hidden" name="capacidad" th:if="${capacidadSeleccionada != null}" th:value="${capacidadSeleccionada.name()}" />
+                <span class="input-group-text bg-white border-end-0">🔍</span>
+                <input type="text" name="filtro" class="form-control border-start-0" placeholder="Buscar por sala o profesor..." th:value="${filtroTexto}" />
+                <button type="submit" class="btn btn-dark px-4">Buscar</button>
+                <a th:href="@{/horarios}" class="btn btn-outline-secondary px-3">Limpiar</a>
             </div>
+        </form>
 
-
-            <div class="turno" th:each="c : ${dia.value}"
-                 th:classappend="'turno-' + ${#strings.toLowerCase(c.capacidad.name())}">
-                <b th:text="${#temporals.format(c.inicio, 'HH:mm')}">18:00</b>
-                <span th:text="${c.nombre}">Spinning</span>
-                <small th:text="${c.lugar} + ' • ' + ${c.duracion} + ' min'">Sala 1 • 45 min</small>
-
-                <!-- Detalle de cupos -->
-                <div class="mt-1 small text-muted">
-                    <span th:if="${c.cupo > 0}" th:text="'Cupos: ' + ${c.cupo}">Cupos: 5</span>
-                    <span th:if="${c.cupo <= 0}" class="text-danger fw-bold">Completa</span>
-                </div>
-
-                <!-- Botones para el Socio -->
-                <div th:if="${session.ROL == 'SOCIO'}" class="mt-2">
-                    <!-- Si ya está inscripto -->
-                    <span th:if="${clasesReservadasIds != null and clasesReservadasIds.contains(c.id)}"
-                          class="badge bg-success w-100 py-1">Inscripto</span>
-
-                    <!-- Si no está inscripto -->
-                    <form th:unless="${clasesReservadasIds != null and clasesReservadasIds.contains(c.id)}"
-                          th:action="@{/reservas/reservar}" method="POST">
-                        <input type="hidden" name="claseId" th:value="${c.id}" />
-                        <input type="hidden" name="origen" value="horarios" />
-                        <button class="btn btn-sm w-100"
-                                th:classappend="${c.cupo > 0} ? 'btn-primary' : 'btn-outline-warning'"
-                                type="submit"
-                                th:text="${c.cupo > 0} ? 'Reservar' : 'Anotarme en lista'">Reservar</button>
-                    </form>
-                </div>
-            </div>
-
-            <p class="dia-vacio" th:if="${#lists.isEmpty(dia.value)}">Sin clases</p>
+        <!-- Mensajes Flash -->
+        <div th:if="${exito != null}" class="alert alert-success alert-dismissible fade show text-center mx-auto" style="max-width: 600px;" role="alert">
+            <span th:text="${exito}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-      <ul class="leyenda" aria-label="Referencias de colores">
-        <li><i class="disco disco-fuerza"></i>Fuerza</li>
-        <li><i class="disco disco-agilidad"></i>Agilidad</li>
-        <li><i class="disco disco-cardio"></i>Cardio</li>
-        <li><i class="disco disco-coordinacion"></i>Coordinación</li>
-      </ul>
-    </section>
+        <div th:if="${error != null}" class="alert alert-danger alert-dismissible fade show text-center mx-auto" style="max-width: 600px;" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
 
-    <section class="cierre" th:if="${session.ROL == null}">
-      <h2>¿Listo para reservar?</h2>
-      <div class="portada-acciones">
-        <a class="btn btn-lg btn-portada" th:href="@{/nuevo-usuario}">Crear mi cuenta</a>
-        <a class="portada-enlace" th:href="@{/login(volver='/clases')}">Ya tengo cuenta</a>
-      </div>
-    </section>
+        <section class="semana mt-4">
+            <div class="semana-grilla" th:style="'--dias:' + ${#maps.size(clasesPorDia)}">
+                <div class="dia border-end pe-2" th:each="dia : ${clasesPorDia}">
+                    <h3 class="text-center border-bottom pb-2 mb-3">
+                        <span class="fw-bold" th:text="${#temporals.dayOfWeekName(dia.key)}">Lunes</span>
+                        <small class="text-muted d-block fs-6 mt-1" th:text="${#temporals.format(dia.key, 'dd/MM')}">05/10</small>
+                    </h3>
 
-  </main>
+                    <!-- Botón crear clase (Solo Entrenador) -->
+                    <div th:if="${session.ROL == 'ENTRENADOR'}" class="mb-3 text-center">
+                        <a class="btn btn-sm btn-outline-primary w-100 fw-bold" style="border-style: dashed;"
+                           th:href="@{/clases/nueva(fecha=${#temporals.format(dia.key, 'yyyy-MM-dd')})}">
+                            + Nueva Clase
+                        </a>
+                    </div>
 
-  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
+                    <!-- Tarjeta del Turno -->
+                    <div class="turno card shadow-sm border-0 mb-3" th:each="c : ${dia.value}"
+                         th:classappend="'turno-' + ${#strings.toLowerCase(c.capacidad.name())}">
+                        <div class="card-body p-3">
+                            <b class="fs-5 d-block mb-1" th:text="${#temporals.format(c.inicio, 'HH:mm')}">18:00</b>
+                            <span class="fw-bold d-block text-truncate" th:text="${c.nombre}">Funcional</span>
+                            <small class="text-muted d-block mb-2" th:text="${c.lugar} + ' • ' + ${c.duracion} + ' min'">Sala 1 • 60 min</small>
 
+                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                                <span class="small fw-bold text-muted">Cupos</span>
+                                <span th:if="${c.cupo > 0}" class="badge bg-dark" th:text="${c.cupo}">5</span>
+                                <span th:if="${c.cupo <= 0}" class="badge bg-danger">Llena</span>
+                            </div>
+
+                            <!-- Botones Socio -->
+                            <div th:if="${session.ROL == 'SOCIO'}">
+                  <span th:if="${clasesReservadasIds != null and clasesReservadasIds.contains(c.id)}"
+                        class="btn btn-sm btn-success w-100 disabled">✓ Inscripto</span>
+
+                                <form th:unless="${clasesReservadasIds != null and clasesReservadasIds.contains(c.id)}"
+                                      th:action="@{/reservas/reservar}" method="POST">
+                                    <input type="hidden" name="claseId" th:value="${c.id}" />
+                                    <input type="hidden" name="origen" value="horarios" />
+                                    <button class="btn btn-sm w-100 fw-bold"
+                                            th:classappend="${c.cupo > 0} ? 'btn-primary' : 'btn-outline-warning'"
+                                            type="submit"
+                                            th:text="${c.cupo > 0} ? 'Reservar' : 'Anotarme en lista'">Reservar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center p-3 text-muted bg-light rounded" style="border-style: dashed;" th:if="${#lists.isEmpty(dia.value)}">
+                        <small>Sin clases</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cierre text-center mt-5" th:if="${session.ROL == null}">
+            <h2>¿Listo para reservar?</h2>
+            <div class="mt-3">
+                <a class="btn btn-lg btn-dark mx-2" th:href="@{/nuevo-usuario}">Crear mi cuenta</a>
+                <a class="btn btn-lg btn-outline-dark mx-2" th:href="@{/login(volver='/horarios')}">Ya tengo cuenta</a>
+            </div>
+        </section>
+    </div>
+</main>
+
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
 </body>
-
 </html>

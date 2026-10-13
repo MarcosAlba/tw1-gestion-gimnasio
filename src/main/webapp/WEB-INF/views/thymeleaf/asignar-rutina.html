@@ -1,0 +1,178 @@
+<!DOCTYPE HTML>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: cabecera('Asignar Rutina')}"></head>
+<body class="bg-light">
+<nav th:replace="~{fragmentos :: barra('socios')}"></nav>
+
+<main role="main" class="container py-5" style="max-width: 1100px;">
+    <header class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold text-dark" th:text="'Plan de: ' + ${socio.nombre != null ? socio.nombre + ' ' + socio.apellido : socio.email}">Rutina</h1>
+            <p class="text-muted fs-5">Diseñá la rutina semanal asignando ejercicios del catálogo.</p>
+        </div>
+        <a th:href="@{/socios}" class="btn btn-outline-secondary px-4 rounded-pill">← Volver a Socios</a>
+    </header>
+
+    <!-- Panel de Formulario Mejorado -->
+    <div class="card shadow border-0 mb-5 rounded-4">
+        <div class="card-header bg-dark text-white fw-bold py-3 fs-5 rounded-top-4">
+            🏋️‍♂️ Agregar nuevo ejercicio
+        </div>
+        <div class="card-body p-4 bg-white rounded-bottom-4">
+            <form th:action="@{'/socios/' + ${socio.id} + '/rutina/asignar'}" th:object="${nuevoItem}" method="POST" accept-charset="UTF-8">
+
+                <div class="row g-4 mb-4">
+                    <!-- Día -->
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Día</label>
+                        <select th:field="*{dia}" class="form-select form-select-lg bg-light" required>
+                            <option th:each="d : ${T(com.tallerwebi.dominio.enums.DiaSemana).values()}" th:value="${d}" th:text="${d.etiqueta}">Lunes</option>
+                        </select>
+                    </div>
+
+                    <!-- Nombre del Ejercicio con Autocompletado -->
+                    <div class="col-md-7 position-relative">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Buscador de Ejercicio</label>
+                        <input type="text" th:field="*{nombreEjercicio}" id="inputNombreEjercicio" class="form-control form-control-lg border-primary" placeholder="Ej: Escribí 'Press'..." autocomplete="off" required>
+                        <!-- Contenedor de Sugerencias -->
+                        <div id="sugerencias-ejercicios" class="list-group position-absolute w-100 shadow-lg mt-1" style="z-index: 1000; display: none; max-height: 250px; overflow-y: auto;">
+                            <!-- Se llena con JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Slug Oculto (Se llena solo) -->
+                    <div class="col-md-2 d-none">
+                        <input type="text" th:field="*{slugEjercicio}" id="inputSlugEjercicio" class="form-control">
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <a th:href="@{/catalogo}" target="_blank" class="btn btn-outline-info btn-lg w-100">Catálogo ↗</a>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-2">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Series</label>
+                        <input type="number" min="1" max="20" th:field="*{detalle.series}" class="form-control form-control-lg bg-light" value="4" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Reps</label>
+                        <input type="number" min="1" max="100" th:field="*{detalle.repeticiones}" class="form-control form-control-lg bg-light" value="10" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Peso (Kg)</label>
+                        <input type="number" step="0.5" min="0" th:field="*{detalle.pesoKg}" class="form-control form-control-lg bg-light" placeholder="Ej: 20">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Observaciones</label>
+                        <input type="text" th:field="*{detalle.observaciones}" class="form-control form-control-lg bg-light" placeholder="Ej: Movimiento controlado">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm">Asignar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Vista de ejercicios ya cargados -->
+    <h4 class="fw-bold mb-4 text-dark border-bottom pb-2">Plan Actual Asignado</h4>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div class="col" th:each="entry : ${rutinaPorDias}" th:unless="${#lists.isEmpty(entry.value)}">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-bottom-0 pt-4 pb-2 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-primary mb-0 fs-4" th:text="${entry.key.etiqueta}">Lunes</h5>
+                    <span class="badge bg-light text-dark border rounded-pill px-3 py-2" th:text="${#lists.size(entry.value)} + ' items'"></span>
+                </div>
+                <div class="card-body">
+                    <div th:each="it : ${entry.value}" class="p-3 mb-3 bg-light rounded-3 position-relative border border-white shadow-sm transition-hover">
+                        <form th:action="@{'/socios/' + ${socio.id} + '/rutina/eliminar'}" method="POST" class="position-absolute top-0 end-0 m-2" onsubmit="return confirm('¿Eliminar este ejercicio?');">
+                            <input type="hidden" name="idItem" th:value="${it.id}">
+                            <button type="submit" class="btn-close" aria-label="Eliminar" title="Eliminar ejercicio"></button>
+                        </form>
+
+                        <strong class="d-block mb-2 pe-4 fs-5 text-dark" th:text="${it.nombreEjercicio}">Press banca</strong>
+                        <div class="d-flex gap-2 mb-2">
+                            <span class="badge bg-dark fs-6 rounded-pill px-3" th:text="${it.detalle.series} + ' x ' +${it.detalle.repeticiones}"></span>
+                            <span class="badge bg-warning text-dark fs-6 rounded-pill px-3" th:if="${it.detalle.pesoKg != null}" th:text="${it.detalle.pesoKg} + ' kg'"></span>
+                        </div>
+                        <div class="small text-muted fst-italic mt-2" th:if="${it.detalle.observaciones != null and !#strings.isEmpty(it.detalle.observaciones)}" th:text="'📝 ' + ${it.detalle.observaciones}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+
+<!-- SCRIPT DE AUTOCOMPLETADO (Simulando Catálogo) -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const inputNombre = document.getElementById("inputNombreEjercicio");
+      const inputSlug = document.getElementById("inputSlugEjercicio");
+      const sugerencias = document.getElementById("sugerencias-ejercicios");
+
+      // Catálogo de la API/Base de datos
+      const catalogoEjercicios = [
+        { nombre: "Press de pecho plano", slug: "barbell-bench-press" },
+        { nombre: "Press de hombros con mancuernas", slug: "dumbbell-shoulder-press" },
+        { nombre: "Press francés", slug: "skull-crushers" },
+        { nombre: "Press inclinado", slug: "incline-bench-press" },
+        { nombre: "Sentadilla libre", slug: "barbell-squat" },
+        { nombre: "Sentadilla búlgara", slug: "bulgarian-split-squat" },
+        { nombre: "Peso muerto", slug: "deadlift" },
+        { nombre: "Curl de bíceps", slug: "bicep-curl" },
+        { nombre: "Jalón al pecho", slug: "lat-pulldown" },
+        { nombre: "Remo con barra", slug: "barbell-row" }
+      ];
+
+      inputNombre.addEventListener("input", function() {
+        const query = this.value.toLowerCase().trim();
+        sugerencias.innerHTML = ""; // Limpiar sugerencias
+
+        if (!query) {
+          sugerencias.style.display = "none";
+          inputSlug.value = ""; // Limpiar slug si borra
+          return;
+        }
+
+        // Filtrar coincidencias
+        const filtrados = catalogoEjercicios.filter(ej => ej.nombre.toLowerCase().includes(query));
+
+        if (filtrados.length > 0) {
+          sugerencias.style.display = "block";
+          filtrados.forEach(ej => {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "list-group-item list-group-item-action fw-bold text-primary";
+            item.innerHTML = ej.nombre.replace(new RegExp(query, "gi"), match => `<span class="text-dark bg-warning rounded px-1">${match}</span>`);
+
+            // Al hacer clic en una sugerencia
+            item.addEventListener("click", function() {
+              inputNombre.value = ej.nombre;
+              inputSlug.value = ej.slug; // Llena el slug oculto
+              sugerencias.style.display = "none";
+            });
+            sugerencias.appendChild(item);
+          });
+        } else {
+          sugerencias.style.display = "none";
+        }
+      });
+
+      // Ocultar si hace clic fuera
+      document.addEventListener("click", function(e) {
+        if (!inputNombre.contains(e.target) && !sugerencias.contains(e.target)) {
+          sugerencias.style.display = "none";
+        }
+      });
+    });
+</script>
+
+<style>
+    .transition-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .transition-hover:hover { transform: translateY(-3px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; }
+</style>
+</body>
+</html>

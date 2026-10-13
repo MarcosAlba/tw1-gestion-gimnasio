@@ -2053,3 +2053,7 @@ a:hover {
 .barra-cerrar-sesion:hover {
   color: #ff6b6b;
 }
+
+.border-dashed {
+ border-style: dashed !important;
+  }
