@@ -1,9 +1,11 @@
 package com.tallerwebi.presentacion;
 
+import com.tallerwebi.dominio.EjercicioApi;
 import com.tallerwebi.dominio.ItemRutina;
 import com.tallerwebi.dominio.Usuario;
 import com.tallerwebi.dominio.enums.DiaSemana;
 import com.tallerwebi.dominio.excepcion.UsuarioNoEncontrado;
+import com.tallerwebi.dominio.interfaces.ServicioCatalogoApi;
 import com.tallerwebi.dominio.interfaces.ServicioRutina;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -28,10 +30,12 @@ public class ControladorRutina {
   private static final String REDIRECT_LOGIN = "redirect:/login";
 
   private final ServicioRutina servicioRutina;
+  private final ServicioCatalogoApi servicioCatalogo;
 
   @Autowired
-  public ControladorRutina(ServicioRutina servicioRutina) {
+  public ControladorRutina(ServicioRutina servicioRutina, ServicioCatalogoApi servicioCatalogo) {
     this.servicioRutina = servicioRutina;
+    this.servicioCatalogo = servicioCatalogo;
   }
 
   // 1. Ver mi rutina (Socio)
@@ -83,6 +87,10 @@ public class ControladorRutina {
       modelAndView.addObject("socio", socio);
       modelAndView.addObject("rutinaPorDias", rutina);
       modelAndView.addObject("nuevoItem", new ItemRutina());
+
+      // Pasamos la lista ordenada del JSON a la vista:
+      modelAndView.addObject("catalogo", servicioCatalogo.obtenerTodosOrdenados());
+
       return modelAndView;
     } catch (UsuarioNoEncontrado exUsuario) {
       return new ModelAndView("redirect:/socios");

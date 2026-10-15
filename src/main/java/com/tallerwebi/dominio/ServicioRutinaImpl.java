@@ -4,6 +4,7 @@ import com.tallerwebi.dominio.enums.DiaSemana;
 import com.tallerwebi.dominio.excepcion.UsuarioNoEncontrado;
 import com.tallerwebi.dominio.interfaces.RepositorioItemRutina;
 import com.tallerwebi.dominio.interfaces.RepositorioUsuario;
+import com.tallerwebi.dominio.interfaces.ServicioCatalogoApi;
 import com.tallerwebi.dominio.interfaces.ServicioRutina;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -19,14 +20,17 @@ public class ServicioRutinaImpl implements ServicioRutina {
 
   private final RepositorioUsuario repositorioUsuario;
   private final RepositorioItemRutina repositorioItemRutina;
+  private final ServicioCatalogoApi servicioCatalogoApi;
 
   @Autowired
   public ServicioRutinaImpl(
     RepositorioUsuario repositorioUsuario,
-    RepositorioItemRutina repositorioItemRutina
+    RepositorioItemRutina repositorioItemRutina,
+    ServicioCatalogoApi servicioCatalogoApi
   ) {
     this.repositorioUsuario = repositorioUsuario;
     this.repositorioItemRutina = repositorioItemRutina;
+    this.servicioCatalogoApi = servicioCatalogoApi;
   }
 
   @Override
@@ -48,6 +52,17 @@ public class ServicioRutinaImpl implements ServicioRutina {
     throws UsuarioNoEncontrado {
     Usuario socio = obtenerSocio(idSocio);
     Usuario entrenador = repositorioUsuario.buscarPorId(idEntrenador);
+
+    // BLINDAJE: Si viene un slug, traemos los datos oficiales del JSON
+    if (item.getSlugEjercicio() != null && !item.getSlugEjercicio().isBlank()) {
+      EjercicioApi ejercicioOficial = servicioCatalogoApi.buscarPorSlug(item.getSlugEjercicio());
+      if (ejercicioOficial != null) {
+        // Forzamos el nombre oficial en español del JSON:
+        item.setNombreEjercicio(ejercicioOficial.getName().getEs());
+        item.setSlugEjercicio(ejercicioOficial.getSlug());
+      }
+    }
+
     item.setSocio(socio);
     item.setEntrenador(entrenador);
     repositorioItemRutina.guardar(item);
