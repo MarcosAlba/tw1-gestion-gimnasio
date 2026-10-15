@@ -1,63 +1,94 @@
 <!DOCTYPE HTML>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-
 <head th:replace="~{fragmentos :: cabecera('Mi membresía')}"></head>
+<body class="bg-light">
+<nav th:replace="~{fragmentos :: barra('membresias')}"></nav>
 
-<body>
+<main role="main" class="container py-5" style="max-width: 900px;">
 
-  <nav th:replace="~{fragmentos :: barra('membresias')}"></nav>
-
-  <main role="main" class="pagina">
-    <header class="pagina-cabecera">
-      <div>
-        <h1>Mi membresía</h1>
-        <p>Necesitás una membresía vigente para reservar clases.</p>
-      </div>
+    <header class="mb-4 text-center">
+        <h1 class="fw-bold">Mi membresía</h1>
+        <p class="text-muted fs-5">Necesitás una membresía vigente para reservar clases y tener acceso al gimnasio.</p>
     </header>
 
-    <div th:if="${vigente != null}" class="pase">
-      <span class="pase-tipo" th:text="${#strings.capitalize(#strings.toLowerCase(vigente.tipo))}">Mensual</span>
-      <span>Vigente. Vence el <strong th:text="${#temporals.format(vigente.fechaVencimiento, 'dd/MM/yyyy')}">01/01/2026</strong></span>
+    <!-- CARNET DIGITAL: ESTADO ACTUAL -->
+    <div class="card border-0 shadow-sm rounded-4 mb-5 overflow-hidden">
+        <!-- Si tiene pase vigente -->
+        <div th:if="${vigente != null}" class="p-4 bg-dark text-white d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-success mb-2 px-3 py-1 rounded-pill">Acceso Activo</span>
+                <h2 class="fw-bold mb-0 text-capitalize" th:text="${#strings.toLowerCase(vigente.tipo)}">Mensual</h2>
+                <span class="d-none pase-tipo" th:text="${#strings.capitalize(#strings.toLowerCase(vigente.tipo))}">Mensual</span>
+            </div>
+            <div class="text-end">
+                <span class="text-muted small d-block">Vigente. Vence el</span>
+                <strong class="fs-4 text-warning" th:text="${#temporals.format(vigente.fechaVencimiento, 'dd/MM/yyyy')}">01/01/2026</strong>
+            </div>
+        </div>
+
+        <!-- Si no tiene pase vigente -->
+        <div th:if="${vigente == null}" class="p-4 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-4 d-flex justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-danger mb-1 px-3 py-1 rounded-pill">Sin membresía vigente</span>
+                <p class="text-danger fw-bold mb-0">Contratá un plan para volver a reservar tus clases.</p>
+                <span class="d-none pase-tipo">Sin membresía vigente</span>
+            </div>
+
+        </div>
     </div>
-    <div th:if="${vigente == null}" class="pase pase-sin">
-      <span class="pase-tipo">Sin membresía vigente</span>
-      <span>Contratá un plan para volver a reservar.</span>
+
+    <!-- CONTRATAR NUEVO PLAN -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white">
+        <h4 class="fw-bold mb-3">Contratar o renovar un plan</h4>
+        <form th:action="@{/membresias/guardar}" method="POST" class="d-flex gap-3 align-items-center">
+            <div class="flex-grow-1">
+                <label class="form-label text-muted small fw-bold text-uppercase" for="tipo">Elegí la duración</label>
+                <select name="tipo" id="tipo" class="form-select form-select-lg bg-light" required>
+                    <option value="" disabled selected>Seleccioná un plan...</option>
+                    <option th:each="t : ${T(com.tallerwebi.dominio.enums.TipoMembresia).values()}"
+                            th:value="${t}"
+                            th:text="${#strings.capitalize(#strings.toLowerCase(t))} + ' (' + ${t.meses} + (${t.meses == 1} ? ' mes' : ' meses') + ')'">
+                    </option>
+                </select>
+            </div>
+            <div class="d-flex align-items-end" style="height: 100%;">
+                <button id="btn-contratar" class="btn btn-primary btn-lg rounded-pill px-4 fw-bold mt-4 shadow-sm" type="submit">
+                    Contratar
+                </button>
+            </div>
+        </form>
     </div>
 
-    <form th:action="@{/membresias/guardar}" method="POST" class="formulario mb-5">
-      <label class="campo-etiqueta" for="tipo">Contratar un plan</label>
-      <select name="tipo" id="tipo" class="form-select" required>
-        <option value="" disabled selected>Elegí un plan</option>
-        <option th:each="t : ${T(com.tallerwebi.dominio.enums.TipoMembresia).values()}" th:value="${t}"
-          th:text="${#strings.capitalize(#strings.toLowerCase(t))} + ' (' + ${t.meses} + (${t.meses == 1} ? ' mes' : ' meses') + ')'"></option>
-      </select>
-      <button id="btn-contratar" class="btn btn-primary" type="submit">Contratar</button>
-    </form>
-
-    <h5>Historial</h5>
-    <div class="tabla-responsive" th:unless="${#lists.isEmpty(historial)}">
-      <table class="tabla">
-        <thead>
-          <tr>
-            <th>Plan</th>
-            <th>Inicio</th>
-            <th>Vencimiento</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:each="m : ${historial}">
-            <td class="principal" th:text="${#strings.capitalize(#strings.toLowerCase(m.tipo))}">Mensual</td>
-            <td th:text="${#temporals.format(m.fechaInicio, 'dd/MM/yyyy')}">01/01/2026</td>
-            <td th:text="${#temporals.format(m.fechaVencimiento, 'dd/MM/yyyy')}">01/02/2026</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- HISTORIAL DE MEMBRESÍAS -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" th:unless="${#lists.isEmpty(historial)}">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold mb-0">Historial</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Plan</th>
+                    <th>Inicio</th>
+                    <th>Vencimiento</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="m : ${historial}">
+                    <td class="ps-4 fw-bold text-capitalize" th:text="${#strings.toLowerCase(m.tipo)}">Mensual</td>
+                    <td class="text-muted" th:text="${#temporals.format(m.fechaInicio, 'dd/MM/yyyy')}">01/01/2026</td>
+                    <td class="text-secondary fw-semibold" th:text="${#temporals.format(m.fechaVencimiento, 'dd/MM/yyyy')}">01/02/2026</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-    <p th:if="${#lists.isEmpty(historial)}" class="vacio">Todavía no tenés membresías.</p>
-  </main>
 
-  <th:block th:replace="~{fragmentos :: scripts}"></th:block>
+    <div th:if="${#lists.isEmpty(historial)}" class="text-center p-4 bg-white rounded-4 shadow-sm">
+        <p class="text-muted mb-0">Todavía no tenés membresías.</p>
+    </div>
 
+</main>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
 </body>
-
 </html>

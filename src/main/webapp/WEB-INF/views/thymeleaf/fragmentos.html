@@ -1,109 +1,113 @@
 <!DOCTYPE HTML>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-
-<!--
-  Piezas compartidas por todas las vistas.
-  Se usan con: th:replace="~{fragmentos :: nombre(parametros)}"
--->
-
+<!-- Piezas compartidas por todas las vistas -->
 <head th:fragment="cabecera(titulo)">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title th:text="${titulo} + ' - Gimnasio UNLAM'">Gimnasio UNLAM</title>
 
-  <title th:text="${titulo} + ' - Gimnasio UNLAM'">Gimnasio UNLAM</title>
+    <!-- Tipografías -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Tipografias: Big Shoulders Display (titulos) y Public Sans (texto) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 
-  <!-- Boostrap core css -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-
-  <!-- custom style -->
-  <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <!-- Custom style -->
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
 </head>
-
 <body>
 
-  <!--
-    Barra superior. El parametro "activo" marca la pagina actual
-    (clases, reservas, membresias, rutina, ejercicios).
-    El texto de la marca tiene que seguir siendo "UNLAM": lo usa el test de punta a punta.
-  -->
-  <nav th:fragment="barra(activo)" class="barra" aria-label="Principal">
-    <a class="navbar-brand" th:href="${session.ROL != null} ? @{/home} : @{/}">UNLAM</a>
-    <span class="barra-sub">Gimnasio</span>
+<!-- Barra de Navegación Principal -->
+<nav th:fragment="barra(activo)" class="barra shadow-sm" aria-label="Principal">
+    <div class="d-flex align-items-center">
+        <a class="navbar-brand text-decoration-none" th:href="${session.ROL != null} ? @{/home} : @{/}">UNLAM</a>
+        <span class="barra-sub text-muted ms-2">Gimnasio</span>
+    </div>
 
-    <ul class="barra-enlaces" th:if="${session.ROL != null}">
-      <li th:if="${session.ROL == 'ENTRENADOR' or session.ROL == 'SOCIO'}">
-        <a th:href="@{/clases}" th:aria-current="${activo == 'clases'} ? 'page'">Clases</a>
-      </li>
-      <li th:if="${session.ROL == 'SOCIO'}">
-        <a th:href="@{/reservas}" th:aria-current="${activo == 'reservas'} ? 'page'">Mis reservas</a>
-      </li>
-      <li th:if="${session.ROL == 'SOCIO'}">
-        <a th:href="@{/membresias}" th:aria-current="${activo == 'membresias'} ? 'page'">Mi membresía</a>
-      </li>
-      <li th:if="${session.ROL == 'SOCIO'}">
-        <a th:href="@{/rutina}" th:aria-current="${activo == 'rutina'} ? 'page'">Mi rutina</a>
-      </li>
-        <li th:if="${session.ROL == 'ENTRENADOR' or session.ROL == 'SOCIO'}">
+    <!-- Menú Con Sesión Iniciada -->
+    <ul class="barra-enlaces mb-0 align-items-center" th:if="${session.ROL != null}">
+
+        <!-- Enlaces Comunes -->
+        <li>
+            <a th:href="@{/horarios}" th:aria-current="${activo == 'horarios'} ? 'page'">Horarios</a>
+        </li>
+        <li>
+            <a th:href="@{/clases}" th:aria-current="${activo == 'clases'} ? 'page'">Clases</a>
+        </li>
+        <li >
             <a th:href="@{/catalogo}" th:aria-current="${activo == 'catalogo'} ? 'page'">Lista de Ejercicios</a>
         </li>
+        <!-- Accesos exclusivos del Socio -->
+        <li th:if="${session.ROL == 'SOCIO'}">
+            <a th:href="@{/reservas}" th:aria-current="${activo == 'reservas'} ? 'page'">Mis reservas</a>
+        </li>
+        <li th:if="${session.ROL == 'SOCIO'}">
+            <a th:href="@{/rutina}" th:aria-current="${activo == 'rutina'} ? 'page'">Mi rutina</a>
+        </li>
+        <li th:if="${session.ROL == 'SOCIO'}">
+            <a th:href="@{/membresias}" th:aria-current="${activo == 'membresias'} ? 'page'">Mi membresía</a>
+        </li>
+        <!-- Accesos exclusivos del Entrenador -->
         <li th:if="${session.ROL == 'ENTRENADOR'}">
             <a th:href="@{/socios}" th:aria-current="${activo == 'socios'} ? 'page'">Socios</a>
         </li>
-      <li>
-        <a th:href="@{/perfil}" th:aria-current="${activo == 'perfil'} ? 'page'">Mi perfil</a>
-      </li>
-      <li>
-        <span class="barra-rol"
-          th:text="${session.ROL == 'SOCIO'} ? 'Socio' : (${session.ROL == 'ENTRENADOR'} ? 'Entrenador' : 'Administración')">Socio</span>
-      </li>
+
+        <!-- Perfil y Rol -->
         <li>
-            <a id="btn-cerrar-sesion" class="barra-cerrar-sesion" th:href="@{/cerrar-sesion}">Cerrar sesión</a>
+            <a th:href="@{/perfil}" th:aria-current="${activo == 'perfil'} ? 'page'">Mi perfil</a>
+        </li>
+        <li>
+        <span class="badge rounded-pill px-3 py-2"
+              th:classappend="${session.ROL == 'ENTRENADOR'} ? 'bg-primary' : 'bg-dark'"
+              th:text="${session.ROL == 'SOCIO'} ? 'Socio' : (${session.ROL == 'ENTRENADOR'} ? 'Entrenador' : 'Administración')">
+          Socio
+        </span>
+        </li>
+        <li>
+            <a id="btn-cerrar-sesion" class="btn btn-sm btn-outline-danger ms-2 px-3 rounded-pill" th:href="@{/cerrar-sesion}">Salir</a>
         </li>
     </ul>
 
-    <!-- Sin sesion: horarios publicos y accesos para entrar o registrarse -->
-    <ul class="barra-enlaces" th:if="${session.ROL == null}">
-      <li>
-        <a th:href="@{/horarios}" th:aria-current="${activo == 'horarios'} ? 'page'">Horarios</a>
-      </li>
-      <li>
-        <a id="barra-crear-cuenta" th:href="@{/nuevo-usuario}" th:aria-current="${activo == 'nuevo-usuario'} ? 'page'">Crear cuenta</a>
-      </li>
-      <li th:if="${activo != 'login'}">
-        <a id="barra-ingresar" class="barra-ingresar" th:href="@{/login}">Ingresar</a>
-      </li>
+    <!-- Menú Sin Sesión (Público) -->
+    <ul class="barra-enlaces mb-0 align-items-center" th:if="${session.ROL == null}">
+        <li>
+            <a th:href="@{/horarios}" th:aria-current="${activo == 'horarios'} ? 'page'">Horarios</a>
+        </li>
+        <li>
+            <a th:href="@{/catalogo}" th:aria-current="${activo == 'catalogo'} ? 'page'">Lista de Ejercicios</a>
+        </li>
+        <li>
+            <a id="barra-crear-cuenta" th:href="@{/nuevo-usuario}" th:aria-current="${activo == 'nuevo-usuario'} ? 'page'">Crear cuenta</a>
+        </li>
+        <li th:if="${activo != 'login'}">
+            <a id="barra-ingresar" class="barra-ingresar btn btn-primary text-white rounded-pill px-3" th:href="@{/login}">Ingresar</a>
+        </li>
     </ul>
-  </nav>
+</nav>
 
-  <!-- Capacidad fisica: disco con el color de su capacidad y el nombre al lado -->
-  <span th:fragment="capacidad(valor)" class="capacidad" th:if="${valor != null}"
-    th:with="etiqueta=${valor.name() == 'COORDINACION'} ? 'Coordinación' : ${#strings.capitalize(#strings.toLowerCase(valor))}"
-    th:title="${etiqueta}">
+<!-- Componente visual: Disco de Capacidad Física -->
+<span th:fragment="capacidad(valor)" class="capacidad" th:if="${valor != null}"
+      th:with="etiqueta=${valor.name() == 'COORDINACION'} ? 'Coordinación' : ${#strings.capitalize(#strings.toLowerCase(valor))}"
+      th:title="${etiqueta}">
     <i class="disco" th:classappend="${'disco-' + #strings.toLowerCase(valor)}" aria-hidden="true"></i>
     <span class="capacidad-nombre" th:text="${etiqueta}">Fuerza</span>
   </span>
 
-  <!-- Dificultad: tres segmentos (principiante 1, intermedio 2, avanzado 3) y el nombre -->
-  <span th:fragment="dificultad(valor)" class="nivel" th:if="${valor != null}">
+<!-- Componente visual: Dificultad (3 barras de nivel) -->
+<span th:fragment="dificultad(valor)" class="nivel" th:if="${valor != null}">
     <span class="nivel-barras" aria-hidden="true">
       <i th:each="n : ${#numbers.sequence(1, 3)}" th:classappend="${n le valor.ordinal() + 1} ? 'on'"></i>
     </span>
     <span th:text="${#strings.capitalize(#strings.toLowerCase(valor))}">Intermedio</span>
   </span>
 
-  <th:block th:fragment="scripts">
-    <!-- Boostrap core js -->
+<th:block th:fragment="scripts">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-      crossorigin="anonymous"></script>
-  </th:block>
-
+            integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+            crossorigin="anonymous"></script>
+</th:block>
 </body>
-
 </html>
