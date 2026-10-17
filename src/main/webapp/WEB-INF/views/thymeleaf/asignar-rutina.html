@@ -16,7 +16,7 @@
     <!-- Panel de Formulario Mejorado -->
     <div class="card shadow border-0 mb-5 rounded-4">
         <div class="card-header bg-dark text-white fw-bold py-3 fs-5 rounded-top-4">
-            🏋️‍♂️ Agregar nuevo ejercicio
+             Agregar nuevo ejercicio
         </div>
         <div class="card-body p-4 bg-white rounded-bottom-4">
             <form th:action="@{'/socios/' + ${socio.id} + '/rutina/asignar'}" th:object="${nuevoItem}" method="POST" accept-charset="UTF-8">
@@ -31,13 +31,31 @@
                     </div>
 
                     <!-- Nombre del Ejercicio con Autocompletado -->
+                    <!-- Input con Autocompletado nativo -->
                     <div class="col-md-7 position-relative">
-                        <label class="form-label text-muted small fw-bold text-uppercase">Buscador de Ejercicio</label>
-                        <input type="text" th:field="*{nombreEjercicio}" id="inputNombreEjercicio" class="form-control form-control-lg border-primary" placeholder="Ej: Escribí 'Press'..." autocomplete="off" required>
-                        <!-- Contenedor de Sugerencias -->
-                        <div id="sugerencias-ejercicios" class="list-group position-absolute w-100 shadow-lg mt-1" style="z-index: 1000; display: none; max-height: 250px; overflow-y: auto;">
-                            <!-- Se llena con JavaScript -->
-                        </div>
+                        <label class="form-label text-muted small fw-bold text-uppercase" for="buscadorEjercicio">
+                            Buscar Ejercicio del Catálogo
+                        </label>
+                        <input type="text"
+                               id="buscadorEjercicio"
+                               class="form-control form-control-lg border-primary"
+                               list="listaEjercicios"
+                               placeholder="Escribí para buscar (ej: press, sentadilla, curl...)"
+                               autocomplete="off"
+                               required>
+
+                        <!-- Lista desplegable que alimenta el input nativamente -->
+                        <datalist id="listaEjercicios">
+                            <option th:each="ej : ${catalogo}"
+                                    th:value="${ej.name.es}"
+                                    th:data-slug="${ej.slug}"
+                                    th:text="${ej.name.es} + ' (' + (${ej.group != null ? ej.group.es : 'General'}) + ')'">
+                            </option>
+                        </datalist>
+
+                        <!-- Campos reales que se envían al backend en el submit -->
+                        <input type="hidden" th:field="*{nombreEjercicio}" id="nombreFinal" />
+                        <input type="hidden" th:field="*{slugEjercicio}" id="slugFinal" />
                     </div>
 
                     <!-- Slug Oculto (Se llena solo) -->
@@ -106,65 +124,26 @@
 
 <th:block th:replace="~{fragmentos :: scripts}"></th:block>
 
-<!-- SCRIPT DE AUTOCOMPLETADO (Simulando Catálogo) -->
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const inputNombre = document.getElementById("inputNombreEjercicio");
-      const inputSlug = document.getElementById("inputSlugEjercicio");
-      const sugerencias = document.getElementById("sugerencias-ejercicios");
+    document.addEventListener("DOMContentLoaded", function () {
+      const buscador = document.getElementById("buscadorEjercicio");
+      const nombreFinal = document.getElementById("nombreFinal");
+      const slugFinal = document.getElementById("slugFinal");
+      const datalist = document.getElementById("listaEjercicios");
 
-      // Catálogo de la API/Base de datos
-      const catalogoEjercicios = [
-        { nombre: "Press de pecho plano", slug: "barbell-bench-press" },
-        { nombre: "Press de hombros con mancuernas", slug: "dumbbell-shoulder-press" },
-        { nombre: "Press francés", slug: "skull-crushers" },
-        { nombre: "Press inclinado", slug: "incline-bench-press" },
-        { nombre: "Sentadilla libre", slug: "barbell-squat" },
-        { nombre: "Sentadilla búlgara", slug: "bulgarian-split-squat" },
-        { nombre: "Peso muerto", slug: "deadlift" },
-        { nombre: "Curl de bíceps", slug: "bicep-curl" },
-        { nombre: "Jalón al pecho", slug: "lat-pulldown" },
-        { nombre: "Remo con barra", slug: "barbell-row" }
-      ];
+      buscador.addEventListener("input", function () {
+        const valor = this.value.trim();
+        // Buscamos si lo escrito coincide con alguna opción de la lista
+        const opcionSeleccionada = Array.from(datalist.options).find(
+          (opt) => opt.value.toLowerCase() === valor.toLowerCase()
+        );
 
-      inputNombre.addEventListener("input", function() {
-        const query = this.value.toLowerCase().trim();
-        sugerencias.innerHTML = ""; // Limpiar sugerencias
-
-        if (!query) {
-          sugerencias.style.display = "none";
-          inputSlug.value = ""; // Limpiar slug si borra
-          return;
-        }
-
-        // Filtrar coincidencias
-        const filtrados = catalogoEjercicios.filter(ej => ej.nombre.toLowerCase().includes(query));
-
-        if (filtrados.length > 0) {
-          sugerencias.style.display = "block";
-          filtrados.forEach(ej => {
-            const item = document.createElement("button");
-            item.type = "button";
-            item.className = "list-group-item list-group-item-action fw-bold text-primary";
-            item.innerHTML = ej.nombre.replace(new RegExp(query, "gi"), match => `<span class="text-dark bg-warning rounded px-1">${match}</span>`);
-
-            // Al hacer clic en una sugerencia
-            item.addEventListener("click", function() {
-              inputNombre.value = ej.nombre;
-              inputSlug.value = ej.slug; // Llena el slug oculto
-              sugerencias.style.display = "none";
-            });
-            sugerencias.appendChild(item);
-          });
+        if (opcionSeleccionada) {
+          nombreFinal.value = opcionSeleccionada.value;
+          slugFinal.value = opcionSeleccionada.getAttribute("data-slug");
         } else {
-          sugerencias.style.display = "none";
-        }
-      });
-
-      // Ocultar si hace clic fuera
-      document.addEventListener("click", function(e) {
-        if (!inputNombre.contains(e.target) && !sugerencias.contains(e.target)) {
-          sugerencias.style.display = "none";
+          nombreFinal.value = valor;
+          slugFinal.value = "";
         }
       });
     });

@@ -9,4 +9,6 @@ public interface ServicioCatalogoApi {
   Set<String> obtenerEquipamientos();
   Set<String> obtenerGrupos();
   EjercicioApi buscarPorSlug(String slug);
+  List<EjercicioApi> obtenerTodos();
+  List<EjercicioApi> obtenerTodosOrdenados();
 }

@@ -2,26 +2,26 @@ package com.tallerwebi.dominio;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tallerwebi.dominio.EjercicioApi;
 import com.tallerwebi.dominio.interfaces.ServicioCatalogoApi;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servicio encargado de leer, cachear y filtrar el catálogo de ejercicios
+ * desde un archivo JSON.
+ */
 @Service("servicioCatalogoApi")
 public class ServicioCatalogoApiImpl implements ServicioCatalogoApi {
 
   private static final String ARCHIVO_DATASET = "exercise-api-dataset.json";
   private final ObjectMapper objectMapper = new ObjectMapper();
   private List<EjercicioApi> cacheEjercicios = null;
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServicioCatalogoApiImpl.class);
 
   private List<EjercicioApi> cargarTodos() {
     if (cacheEjercicios != null && !cacheEjercicios.isEmpty()) {
@@ -31,11 +31,20 @@ public class ServicioCatalogoApiImpl implements ServicioCatalogoApi {
     try (InputStream stream = new ClassPathResource(ARCHIVO_DATASET).getInputStream()) {
       JsonNode nodoRaiz = objectMapper.readTree(stream);
       cacheEjercicios = extraerListaEjercicios(nodoRaiz);
-    } catch (Exception ignored) {
+    } catch (Exception ex) {
+      if (LOGGER.isErrorEnabled()) {
+        LOGGER.error("Error al cargar el dataset de ejercicios: {}", ex.getMessage());
+      }
       cacheEjercicios = Collections.emptyList();
     }
 
     return cacheEjercicios;
+  }
+
+  ///
+  @Override
+  public List<EjercicioApi> obtenerTodos() {
+    return cargarTodos();
   }
 
   private List<EjercicioApi> extraerListaEjercicios(JsonNode nodoRaiz) {
@@ -95,8 +104,10 @@ public class ServicioCatalogoApiImpl implements ServicioCatalogoApi {
       if (ejercicio != null && ejercicio.getName() != null) {
         return ejercicio;
       }
-    } catch (Exception ignored) {
-      // Ignora elementos no compatibles
+    } catch (Exception ex) {
+      if (LOGGER.isWarnEnabled()) {
+        LOGGER.warn("Ignorando elemento no compatible estructuralmente: {}", ex.getMessage());
+      }
     }
     return null;
   }
@@ -174,5 +185,18 @@ public class ServicioCatalogoApiImpl implements ServicioCatalogoApi {
       .filter(ejercicio -> slug.equalsIgnoreCase(ejercicio.getSlug()))
       .findFirst()
       .orElse(null);
+  }
+
+  @Override
+  public List<EjercicioApi> obtenerTodosOrdenados() {
+    List<EjercicioApi> todos = new ArrayList<>(cargarTodos());
+    todos.sort(
+      Comparator.comparing(ejercicio ->
+        ejercicio.getName() != null && ejercicio.getName().getEs() != null
+          ? ejercicio.getName().getEs().toLowerCase(Locale.ROOT)
+          : ""
+      )
+    );
+    return todos;
   }
 }

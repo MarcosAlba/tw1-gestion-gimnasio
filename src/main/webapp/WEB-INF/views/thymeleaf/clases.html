@@ -1,79 +1,119 @@
 <!DOCTYPE HTML>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-
 <head th:replace="~{fragmentos :: cabecera('Clases')}"></head>
-
-<body>
-
+<body class="bg-light">
 <nav th:replace="~{fragmentos :: barra('clases')}"></nav>
 
-<main role="main" class="pagina">
-    <header class="pagina-cabecera">
-        <div>
-            <h1>Próximas clases</h1>
-            <p th:if="${session.ROL == 'SOCIO'}">Elegí una clase y reservá tu lugar. Necesitás una membresía vigente. Si la clase está completa, quedás en lista de espera.</p>
-            <p th:if="${session.ROL != 'SOCIO'}">Clases programadas, ordenadas por horario de inicio.</p>
-        </div>
-        <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}" class="btn btn-primary">Nueva clase</a>
-    </header>
+<main role="main" class="container py-5" style="max-width: 1050px;">
 
-    <div class="tabla-responsive" th:unless="${#lists.isEmpty(clases)}">
-        <table class="tabla">
-            <thead>
-            <tr>
-                <th>Clase</th>
-                <th>Inicio</th>
-                <th class="d-none d-md-table-cell">Duración</th>
-                <th class="d-none d-md-table-cell">Lugar</th>
-                <th>Capacidad</th>
-                <th class="numero d-none d-md-table-cell">Cupo</th>
-                <th th:if="${session.ROL == 'SOCIO'}"></th>
-                <!-- Columna para la acción del entrenador -->
-                <th th:if="${session.ROL == 'ENTRENADOR'}"></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="c : ${clases}">
-                <td>
-                    <span class="principal" th:text="${c.nombre}">Spinning</span>
-                    <span class="secundario" th:text="${c.entrenador.nombre != null ? c.entrenador.nombre + ' ' + c.entrenador.apellido : c.entrenador.email}">Entrenador</span>
-                </td>
-                <td th:text="${#temporals.format(c.inicio, 'dd/MM/yyyy HH:mm')}">01/01/2026 18:00</td>
-                <td class="d-none d-md-table-cell" th:text="${c.duracion} + ' min'">45 min</td>
-                <td class="d-none d-md-table-cell" th:text="${c.lugar}">Sala 1</td>
-                <td><th:block th:replace="~{fragmentos :: capacidad(${c.capacidad})}"></th:block></td>
-                <td class="numero d-none d-md-table-cell" th:text="${c.cupo}">10</td>
-                <td class="accion" th:if="${session.ROL == 'SOCIO'}">
-                    <form th:action="@{/reservas/reservar}" method="POST">
-                        <input type="hidden" name="claseId" th:value="${c.id}" />
-                        <button class="btn btn-sm btn-primary" type="submit">Reservar</button>
-                    </form>
-                </td>
-                <!-- Botón para ver alumnos (solo si el entrenador logueado es el dueño de la clase) -->
-                <td class="accion" th:if="${session.ROL == 'ENTRENADOR'}">
-                    <div class="d-flex gap-1" th:if="${c.entrenador != null and c.entrenador.id == session.ID_USUARIO}">
-                        <a th:href="@{'/clases/' + ${c.id} + '/asistentes'}" class="btn btn-sm btn-outline-primary">
-                            Ver alumnos
-                        </a>
-                        <form th:action="@{'/clases/' + ${c.id} + '/cancelar'}" method="POST"
-                              onsubmit="return confirm('¿Seguro que deseas cancelar esta clase?');">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancelar</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+    <!-- Alertas Flash -->
+    <div th:if="${exito != null}" class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+        <span th:text="${exito}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error != null}" class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <p th:if="${#lists.isEmpty(clases)}" class="vacio">
-        No hay clases programadas.
-        <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}">Creá la primera.</a>
-    </p>
+    <header class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-1">Próximas clases</h1>
+            <p class="text-muted mb-0" th:if="${session.ROL == 'SOCIO'}">Elegí una clase y reservá tu lugar. Necesitás una membresía vigente. Si la clase está completa, quedás en lista de espera.</p>
+            <p class="text-muted mb-0" th:if="${session.ROL != 'SOCIO'}">Clases programadas, ordenadas por horario de inicio.</p>
+        </div>
+        <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+            + Nueva clase
+        </a>
+    </header>
+
+    <!-- Tabla de Clases -->
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden" th:unless="${#lists.isEmpty(clases)}">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Clase y Profesor</th>
+                    <th>Inicio</th>
+                    <th class="d-none d-md-table-cell">Duración</th>
+                    <th class="d-none d-md-table-cell">Lugar</th>
+                    <th>Capacidad</th>
+                    <th class="text-center">Disponibilidad</th>
+                    <th class="text-end pe-4" th:if="${session.ROL == 'SOCIO' or session.ROL == 'ENTRENADOR'}">Acción</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${clases}">
+
+                    <!-- Clase y Profesor -->
+                    <td class="ps-4">
+                        <span class="principal fw-bold d-block text-dark" th:text="${c.nombre}">Spinning</span>
+                        <span class="secundario small text-muted" th:text="${c.entrenador.nombre != null ? c.entrenador.nombre + ' ' + c.entrenador.apellido : c.entrenador.email}">Entrenador</span>
+                    </td>
+
+                    <!-- Inicio -->
+                    <td class="fw-semibold text-secondary" th:text="${#temporals.format(c.inicio, 'dd/MM/yyyy HH:mm')}">01/01/2026 18:00</td>
+
+                    <!-- Duración y Lugar -->
+                    <td class="d-none d-md-table-cell text-muted" th:text="${c.duracion} + ' min'">45 min</td>
+                    <td class="d-none d-md-table-cell">
+                        <span class="badge bg-light text-dark border" th:text="${c.lugar}">Sala 1</span>
+                    </td>
+
+                    <!-- Capacidad Física -->
+                    <td>
+                        <th:block th:replace="~{fragmentos :: capacidad(${c.capacidad})}"></th:block>
+                    </td>
+
+                    <!-- Cupo Didáctico -->
+                    <td class="text-center">
+                <span class="badge rounded-pill px-3 py-2"
+                      th:classappend="${c.cupo > 5} ? 'bg-success' : (${c.cupo > 0} ? 'bg-warning text-dark' : 'bg-danger')"
+                      th:text="${c.cupo > 0} ? ${c.cupo} + ' cupos' : 'Completa'">
+                  10
+                </span>
+                        <span class="d-none numero" th:text="${c.cupo}">10</span>
+                    </td>
+
+                    <!-- Acciones según Rol -->
+                    <td class="text-end pe-4 accion">
+                        <!-- Acción Socio -->
+                        <form th:if="${session.ROL == 'SOCIO'}" th:action="@{/reservas/reservar}" method="POST">
+                            <input type="hidden" name="claseId" th:value="${c.id}" />
+                            <button class="btn btn-sm rounded-pill px-3 fw-bold"
+                                    th:classappend="${c.cupo > 0} ? 'btn-primary' : 'btn-outline-warning'"
+                                    type="submit"
+                                    th:text="${c.cupo > 0} ? 'Reservar' : 'Anotarme'">
+                                Reservar
+                            </button>
+                        </form>
+
+                        <!-- Acciones Entrenador -->
+                        <div th:if="${session.ROL == 'ENTRENADOR' and c.entrenador != null and c.entrenador.id == session.ID_USUARIO}" class="d-flex gap-1 justify-content-end">
+                            <a th:href="@{'/clases/' + ${c.id} + '/asistentes'}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                Alumnos
+                            </a>
+                            <form th:action="@{'/clases/' + ${c.id} + '/cancelar'}" method="POST"
+                                  onsubmit="return confirm('¿Seguro que deseas cancelar esta clase? Se liberarán todas las reservas.');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">Cancelar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Estado Vacío -->
+    <div th:if="${#lists.isEmpty(clases)}" class="text-center p-5 bg-white rounded-4 shadow-sm">
+        <p class="text-muted fs-5 mb-3">No hay clases programadas actualmente.</p>
+        <a th:if="${session.ROL == 'ENTRENADOR'}" th:href="@{/clases/nueva}" class="btn btn-primary rounded-pill px-4">
+            Creá la primera
+        </a>
+    </div>
+
 </main>
-
 <th:block th:replace="~{fragmentos :: scripts}"></th:block>
-
 </body>
-
 </html>
